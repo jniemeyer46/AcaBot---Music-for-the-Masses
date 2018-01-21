@@ -2,15 +2,12 @@ import sys
 import random
 import discord
 import asyncio
+import configparser
+from discord.ext import commands
 
-import Commands
-from Globals import OWNER
+import config
 
 client = discord.Client()
-
-# Holds the commands that do not take any parameters
-commands = ['!help', '!np', '!pause', '!q', '!queue', '!quiet', '!s', '!skip']
-OwnerCommands = ['!playlist', '!restart', '!shuffle', '!shutdown', '!store', '!v', '!volume']
 
 @client.event
 async def on_ready():
@@ -22,33 +19,43 @@ async def on_message(message):
 	# Grabs message content, makes it all lowercase, and stores it in a variable
 	msg = message.content.lower()
 
-	if message.author.name == OWNER and msg in OwnerCommands:
-		# User enters a new playlist file for the bot to pull from (if empty it will not use an autoplaylist)
-		if msg.startswith('!playlist'):
-			pass
+	# Makes sure the owner of the server is the one using the command
+	if str(message.author.id) == str(config.OWNER_ID):
+		await client.send_message(message.channel, "Test")
 
-		# This will restart the bot incase a problem occurs and it needs to be restarted (No clue how to do this one yet)
-		elif msg == '!restart':
-			print("Hello")
+		# Deals with commands that do not have extra parameters (EX: the shutdown command)
+		if msg[1:] in config.OwnerCommands:
+			await client.send_message(message.channel, "Testing")
+			'''# User enters a new playlist file for the bot to pull from (if empty it will not use an autoplaylist)
+			if msg.startswith('!playlist'):
+				pass
 
-		# Toggles shuffle for the queue
-		elif msg == '!shuffle':
-			pass
+			# This will restart the bot incase a problem occurs and it needs to be restarted (No clue how to do this one yet)
+			elif msg == '!restart':
+				print("Hello")
 
-		# Shuts down the bot (Not the correct way to do this, need to look into it still...  Technically works though atm)
-		elif msg == '!shutdown':
-			sys.exit(0)
+			# Toggles shuffle for the queue
+			elif msg == '!shuffle':
+				pass
 
-		# Toggles storing the youtube videos into the current autoplaylist (should not add duplicates)
-		elif msg == '!store':
-			pass
+			# Shuts down the bot (Not the correct way to do this, need to look into it still...  Technically works though atm)
+			elif msg == '!shutdown':
+				sys.exit(0)
 
-		# Outputs the current volume level or allows adjustment of volume level
-		elif msg.startswith('!v'):
-			pass
+			# Toggles storing the youtube videos into the current autoplaylist (should not add duplicates)
+			elif msg == '!store':
+				pass
+
+			# Summons the bot to the the caller's voice channel
+			elif msg == '!summon':
+				await summon(ctx.message.author.voice_channel)
+
+			# Outputs the current volume level or allows adjustment of volume level
+			elif msg.startswith('!v'):
+				pass
 
 	# Check if the user message is a command for the bot not including the commands that take extra perameters
-	elif msg in commands:
+	elif msg in Globals.GeneralCommands:
 		# Outputs information about the song that is currently playing
 		if msg == '!help':
 			await client.send_message(message.channel, 
@@ -60,6 +67,7 @@ async def on_message(message):
 					"	~!shuffle - Determines whether the queue should be shuffles (Toggled). \n"
 					"	!shutdown - Kills AcaBot, RIP. \n"
 					"	~!store - Determines whether songs that users play should be added to the current autoplaylist (Toggled). \n"
+					"	~!summon - Summons the bot to the caller's voice channel"
 					"	~!volume (or !v) - Changes the volume level for the entire server. \n\n"
 
 					"COMMANDS FOR EVERYONE \n"
@@ -70,8 +78,7 @@ async def on_message(message):
 					"	~!quiet - Mutes the bot for a single user (if owner uses the command it mutes the bot for the entire server). \n"
 					"	~!skip (or !s) - Skips the currently playing song. \n"
 					"	~!play <YOUTUBE URL> (or !p) - This will queue a song to be played (will be sentence recognition later). \n"
-					"	~!roll <<number of dice>d<type of dice>> - Will roll a specified dice for the user (example: !roll 5d20 (rolls 5 dice that are 20 sided)). \n"
-					
+					"	~!roll <<number of dice>d<type of dice>> - Will roll a specified dice for the user (example: !roll 5d20 (rolls 5 dice that are 20 sided)). \n"	
 				)
 
 		# Outputs information about the song that is currently playing
@@ -109,4 +116,19 @@ async def on_message(message):
 		pass
 
 
-client.run('Mzk3NTE0MTc5NzE3NzU4OTc3.DT44tA.zMrFDd20CV8qjly7vUX80wkTl3M')
+async def summon(self, ctx):
+	summoned_channel = ctx.message.author.voice_channel
+	if summoned_channel is None:
+		await self.bot.say('You are not currently in a voice channel')
+		return False
+
+	state = self.get_voice_state(ctx.message.server)
+	if state.voice is None:
+		state.voice = await self.bot.join_voice_channel(summoned_channel)
+	else:
+		await state.voice.move_to(summoned_channel)
+
+	return True'''
+
+
+client.run('Mzk3NTE0MTc5NzE3NzU4OTc3.DUZqjg.xtHpMtcJWYUtDBpIGwyJjEFB0mw')
