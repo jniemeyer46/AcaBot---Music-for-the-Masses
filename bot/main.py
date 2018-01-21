@@ -19,6 +19,9 @@ async def on_message(message):
 	# Grabs message content, makes it all lowercase, and stores it in a variable
 	msg = message.content.lower()
 
+
+	'''------OWNER COMMANDS------'''
+
 	# Makes sure the owner of the server is the one using the command
 	if str(message.author.id) == str(config.OWNER_ID):
 		await client.send_message(message.channel, "Test")
@@ -52,10 +55,21 @@ async def on_message(message):
 
 			# Outputs the current volume level or allows adjustment of volume level
 			elif msg.startswith('!v'):
-				pass
+				pass'''
+
+	'''------TRUSTED COMMANDS------'''
+
+	'''elif message.author.id in TRUSTED_IDS:
+		pass
+
+	'''
+
+
+
+	'''------GENERAL COMMANDS------'''
 
 	# Check if the user message is a command for the bot not including the commands that take extra perameters
-	elif msg in Globals.GeneralCommands:
+	'''elif msg in Globals.GeneralCommands:
 		# Outputs information about the song that is currently playing
 		if msg == '!help':
 			await client.send_message(message.channel, 
@@ -128,7 +142,8 @@ async def summon(self, ctx):
 	else:
 		await state.voice.move_to(summoned_channel)
 
-	return True'''
+	return True
+	'''
 
 
-client.run('Mzk3NTE0MTc5NzE3NzU4OTc3.DUZqjg.xtHpMtcJWYUtDBpIGwyJjEFB0mw')
+client.run('Mzk3NTE0MTc5NzE3NzU4OTc3.DUZtUA.S1t3ojHcvZuehJp1HyItSUvbt7Y')
