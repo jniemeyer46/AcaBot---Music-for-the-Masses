@@ -146,4 +146,4 @@ async def summon(self, ctx):
 	'''
 
 
-client.run('Mzk3NTE0MTc5NzE3NzU4OTc3.DUZtUA.S1t3ojHcvZuehJp1HyItSUvbt7Y')
+client.run('Mzk3NTE0MTc5NzE3NzU4OTc3.DUZvcw.vdWbZ5ZaChfVLB-SfqIR85LgLYQ')
