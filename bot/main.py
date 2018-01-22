@@ -2,12 +2,20 @@ import sys
 import random
 import discord
 import asyncio
-import configparser
 from discord.ext import commands
 
-import config
+from config import Config, DefaultConfigs
+#from personal_config import Config, DefaultConfigs
 
+
+# Stores the file that has the user input settings
+config_file = DefaultConfigs.Settings
+
+# Discord client connection
 client = discord.Client()
+# Holds all of AcaBot's configurations
+config = Config(config_file)
+
 
 @client.event
 async def on_ready():
@@ -21,9 +29,10 @@ async def on_message(message):
 
 
 	'''------OWNER COMMANDS------'''
+	print(message.author.top_role)
 
-	# Makes sure the owner of the server is the one using the command
-	if str(message.author.id) == str(config.OWNER_ID):
+	# Makes sure the GIVEN owner of the server is the one using the command
+	if str(message.author.id) == str(config.Owner_ID):
 		await client.send_message(message.channel, "Test")
 
 		# Deals with commands that do not have extra parameters (EX: the shutdown command)
@@ -57,13 +66,13 @@ async def on_message(message):
 			elif msg.startswith('!v'):
 				pass'''
 
+
 	'''------TRUSTED COMMANDS------'''
 
 	'''elif message.author.id in TRUSTED_IDS:
 		pass
 
 	'''
-
 
 
 	'''------GENERAL COMMANDS------'''
@@ -146,4 +155,4 @@ async def summon(self, ctx):
 	'''
 
 
-client.run('Mzk3NTE0MTc5NzE3NzU4OTc3.DUZvcw.vdWbZ5ZaChfVLB-SfqIR85LgLYQ')
+client.run('Mzk3NTE0MTc5NzE3NzU4OTc3.DUZwKw.MgrCahtBQ6ONwyigpe0oJW3LwaI')
