@@ -16,17 +16,23 @@ class Config:
 				"You should have 4 different sections in the settings.ini file, please fix the problem and try again."
 			)
 
+		# .get commands
 		self.Token = config.get('Credentials', 'Token', fallback = DefaultConfigs.Token)
 		self.Owner_ID = config.get('OwnerPermissions', 'Owner_ID', fallback = DefaultConfigs.Owner_ID)
+		self.Role_Permissions = config.get('TrustedPermissions', 'Role_Permissions', fallback = DefaultConfigs.Default_Role_Permissions).split(' ')
+		self.Trusted_Permissions = config.get('TrustedPermissions', 'Trusted_Permissions', fallback = DefaultConfigs.Default_Trusted_Permissions)
 		self.Command_Prefix = config.get('TextChannels', 'Command_Prefix', fallback = DefaultConfigs.Command_Prefix)
-		self.Volume = config.get('MusicBot', 'Volume', fallback = DefaultConfigs.Default_Volume)
 		self.Autoplaylist = config.get('MusicBot', 'Autoplaylist', fallback = DefaultConfigs.Default_Autoplaylist)
-		self.Save = config.get('MusicBot', 'Save', fallback = DefaultConfigs.Save_to_Playlist)
-		self.Shuffle = config.get('MusicBot', 'Shuffle', fallback = DefaultConfigs.Shuffle_Queue)
+
+		# .getfloat commands
+		self.Volume = config.getfloat('MusicBot', 'Volume', fallback = DefaultConfigs.Default_Volume)
+
+		# .getboolean commands
+		self.Save = config.getboolean('MusicBot', 'Save', fallback = DefaultConfigs.Save_to_Playlist)
+		self.Shuffle = config.getboolean('MusicBot', 'Shuffle', fallback = DefaultConfigs.Shuffle_Queue)
 
 		# Make sure all is good
 		self.run_checks()
-		self.get_autoplaylist()
 
 	def run_checks(self):
 		if self.Token is None:
@@ -52,6 +58,10 @@ class DefaultConfigs:
 
 	# Default command prefix that is used to determine a bot command
 	Command_Prefix = '\\'
+
+	# Trusted people on the server
+	Default_Role_Permissions = None
+	Default_Trusted_Permissions = None
 
 	# Default volume
 	Default_Volume = 0.10
