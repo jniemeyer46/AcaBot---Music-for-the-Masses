@@ -1,4 +1,7 @@
 # AcaBot---Music-for-the-Masses
-Simple music bot for discord channels
+This is just a personal project for my Discord Server, if you have a problem running the bot please make sure you are using the correct version of python when trying to start it.
 
-python main.py
+Python version 3.5.1
+
+Use the run.bat file if you are on windows
+Use the run.sh file if you are on mac (Haven't tested yet so if it is wrong either you have the wrong python version path or I just can't help you atm lol)
