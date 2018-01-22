@@ -2,8 +2,9 @@ import configparser
 
 class Config:
 	# Holds the commands that do not take any parameters
+	OwnerCommands = ['playlist', 'restart', 'shutdown']
+	TrustedCommands = ['shuffle','store', 'summon', 'v','volume']
 	GeneralCommands = ['help', 'np', 'pause', 'q', 'queue', 'quiet', 's', 'skip']
-	OwnerCommands = ['playlist', 'restart', 'shuffle', 'shutdown', 'store', 'v', 'volume']
 
 	def __init__(self, config_file):
 		config = configparser.ConfigParser(interpolation=None)
@@ -33,18 +34,28 @@ class Config:
 		self.Shuffle = config.getboolean('MusicBot', 'Shuffle', fallback = DefaultConfigs.Shuffle_Queue)
 
 		# Make sure all is good
-		self.run_checks()
+		self.checks()
+
+		# Create a list containing links to youtube videos
+		self.Create_Autoplaylist()
 
 		# Create the list of Trusted_Permissions
 		self.Create_Trusted_List()
 
+
+	def Create_Autoplaylist(self):
+		if self.Autoplaylist is not None and self.Autoplaylist != 'None':
+			with open('playlists/' + self.Autoplaylist + '.txt') as f:
+				self.Autoplaylist = f.read().split()
+
 	
 	def Create_Trusted_List(self):
-		with open('configs/' + self.Trusted_Permissions + '.txt') as f:
-			self.Trusted_Permissions = f.read().split()
+		if self.Trusted_Permissions is not None:
+			with open('configs/' + self.Trusted_Permissions + '.txt') as f:
+				self.Trusted_Permissions = f.read().split()
 
 
-	def run_checks(self):
+	def checks(self):
 		if self.Token is None:
 			raise Error(
 				"Sorry, the Token given for your AcaBot is not correct...",
