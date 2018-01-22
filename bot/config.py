@@ -10,8 +10,9 @@ class Config:
 		config.read(config_file, encoding='utf-8')
 
 		confSections = {"Credentials", "OwnerPermissions", "TrustedPermissions", "TextChannels", "MusicBot"}.difference(config.sections())
+		
 		if confSections:
-			raise HelpfulError(
+			raise Error(
 				"There seems to be a problem with the configuration sections.",
 				"You should have 4 different sections in the settings.ini file, please fix the problem and try again."
 			)
@@ -34,16 +35,25 @@ class Config:
 		# Make sure all is good
 		self.run_checks()
 
+		# Create the list of Trusted_Permissions
+		self.Create_Trusted_List()
+
+	
+	def Create_Trusted_List(self):
+		with open('configs/' + self.Trusted_Permissions + '.txt') as f:
+			self.Trusted_Permissions = f.read().split()
+
+
 	def run_checks(self):
 		if self.Token is None:
-			raise HelpfulError(
+			raise Error(
 				"Sorry, the Token given for your AcaBot is not correct...",
 				"Please get the token from 'https://discordapp.com/developers/applications/me' and "
 				"place it into the Settings.ini file after 'Token = '."
 			)
 
 		if self.Owner_ID is None:
-			raise HelpfulError(
+			raise Error(
 				"Sorry, there has to be a valid Owner_ID in order to use AcaBot...",
 				"Please fille in the 'Owner_ID = ' field with the server owner's ID "
 				"in order to be able to use AcaBot."
