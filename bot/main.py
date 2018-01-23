@@ -1,11 +1,12 @@
 import sys
+import time
 import random
 import discord
 import asyncio
 from discord.ext import commands
 
-#from config import Config, DefaultConfigs
-from personal_config import Config, DefaultConfigs
+from config import Config, DefaultConfigs
+#from personal_config import Config, DefaultConfigs
 
 
 # Stores the file that has the user input settings
@@ -45,7 +46,7 @@ async def on_message(message):
 
 			# This will restart the bot incase a problem occurs and it needs to be restarted (No clue how to do this one yet)
 			elif msg == 'restart':
-				print("This will not be implemented until the very end most likely.")
+				print('This will not be implemented until the very end most likely.')
 
 			# Shuts down the bot (Not the correct way to do this, need to look into it still...  Technically works though atm)
 			elif msg == 'shutdown':
@@ -59,7 +60,22 @@ async def on_message(message):
 		if config.Trusted_Permissions is None and str(message.author.top_role) in config.Role_Permissions:
 			# Delete all of the bot's previous outputs
 			if msg == 'delete':
-				pass
+				counter = 0
+				msgs = []
+				await client.send_message(message.channel, 'Calculating messages...')
+				async for log in client.logs_from(message.channel):
+					if str(log.author.id) == client.user.id or log.content.startswith(config.Command_Prefix):
+						msgs.append(log)
+						counter += 1
+
+				if len(msgs) < 2:
+					await client.delete_message(msgs[0])
+				elif len(msgs) >= 2 and len(msgs) <= 100:
+					await client.delete_messages(msgs)
+
+				await client.send_message(message.channel, 'You have delete {} of my messages...  Well make that {} messages' .format(counter, counter+1))
+				time.sleep(5)
+				await client.delete_message()
 
 			# Toggles shuffle for the queue
 			elif msg == 'shuffle':
@@ -76,11 +92,26 @@ async def on_message(message):
 			# CHange the volume level of the music
 			elif msg.startswith('v'):
 				pass
-			
+
 		elif message.author.id in config.Trusted_Permissions:
 			# Delete all of the bot's previous outputs
 			if msg == 'delete':
-				pass
+				counter = 0
+				msgs = []
+				await client.send_message(message.channel, 'Calculating messages...')
+				async for log in client.logs_from(message.channel):
+					if str(log.author.id) == client.user.id or log.content.startswith(config.Command_Prefix):
+						msgs.append(log)
+						counter += 1
+
+				if len(msgs) < 2:
+					await client.delete_message(msgs[0])
+				elif len(msgs) >= 2 and len(msgs) <= 100:
+					await client.delete_messages(msgs)
+
+				await client.send_message(message.channel, 'You have delete {} of my messages...  Well make that {} messages' .format(counter, counter+1))
+				time.sleep(5)
+				await client.delete_message()
 
 			# Toggles shuffle for the queue
 			elif msg == 'shuffle':
@@ -105,28 +136,29 @@ async def on_message(message):
 		# Outputs information about the song that is currently playing
 		if msg == 'help':
 			await client.send_message(message.channel, 
-					"~ - means that functionality has not yet been implemented as of yet. \n\n"
+					'~ - means that functionality has not yet been implemented as of yet. \n\n'
 
-					"OWNER SPECIFIC COMMANDS \n"
-					"	~!playlist <name of a .txt file> - This changed the autoplaylist to a user defined list (if no .txt file is specified the autoplaylist will be NONE). \n"
-					"	~!restart - restarts the bot. \n"
-					"	!shutdown - Kills AcaBot, RIP. \n\n"
+					'OWNER SPECIFIC COMMANDS \n'
+					'	~{0}playlist <name of a .txt file> - This changed the autoplaylist to a user defined list (if no .txt file is specified the autoplaylist will be NONE). \n'
+					'	~{0}restart - restarts AcaBot. \n'
+					'	{0}shutdown - Kills AcaBot, RIP. \n\n'
 
-					"TRUSTED USER COMMANDS \n"
-					"	~!shuffle - Determines whether the queue should be shuffles (Toggled). \n"
-					"	~!store - Determines whether songs that users play should be added to the current autoplaylist (Toggled). \n"
-					"	~!summon - Summons the bot to the caller's voice channel"
-					"	~!volume (or !v) - Changes the volume level for the entire server. \n\n"
+					'TRUSTED USER COMMANDS \n'
+					'	{0}delete - Deletes the last 100 commands for AcaBot and AcaBot message, can use multiple times to delete them all.'
+					'	~{0}shuffle - Determines whether the queue should be shuffles (Toggled). \n'
+					'	~{0}store - Determines whether songs that users play should be added to the current autoplaylist (Toggled). \n'
+					'	~{0}summon - Summons the bot to the caller\'s voice channel'
+					'	~{0}volume (or !v) - Changes the volume level for the entire server. \n\n'
 
-					"COMMANDS FOR EVERYONE \n"
-					"	!help - Outputs the bot's commands. \n"
-					"	~!np - Outputs information on the song that is currently playing. \n"
-					"	~!pause - Pauses the currently playing song. \n"
-					"	~!queue (or !q) - Outputs the list of songs that users have asked to be played (in order). \n"
-					"	~!quiet - Mutes the bot for a single user (if owner uses the command it mutes the bot for the entire server). \n"
-					"	~!skip (or !s) - Skips the currently playing song. \n"
-					"	~!play <YOUTUBE URL> (or !p) - This will queue a song to be played (will be sentence recognition later). \n"
-					"	~!roll <<number of dice>d<type of dice>> - Will roll a specified dice for the user (example: !roll 5d20 (rolls 5 dice that are 20 sided)). \n"	
+					'COMMANDS FOR EVERYONE \n'
+					'	{0}help - Outputs commands for AcaBot. \n'
+					'	~{0}np - Outputs information on the song that is currently playing. \n'
+					'	~{0}pause - Pauses the currently playing song. \n'
+					'	~{0}queue (or !q) - Outputs the list of songs that users have asked to be played (in order). \n'
+					'	~{0}quiet - Mutes AcaBot for a single user (if owner uses the command it mutes the bot for the entire server). \n'
+					'	~{0}skip (or !s) - Skips the currently playing song. \n'
+					'	~{0}play <YOUTUBE URL> (or !p) - This will queue a song to be played (will be sentence recognition later). \n'
+					'	~{0}roll <<number of dice>d<type of dice>> - Will roll a specified dice for the user (example: !roll 5d20 (rolls 5 dice that are 20 sided)). \n' .format(config.Command_Prefix)
 				)
 
 		# Outputs information about the song that is currently playing
@@ -139,7 +171,7 @@ async def on_message(message):
 
 		# Outputs the list of songs that have been queued by people in the discord channel
 		elif msg == 'q' or msg == 'queue':
-			await client.send_message(message.channel, "Testing")
+			await client.send_message(message.channel, 'Testing')
 
 		# If the owner uses this command it will mute the bot for the entire channel
 		# If anyone else uses this command it will only mute the bot for them alone
