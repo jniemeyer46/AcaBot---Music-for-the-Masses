@@ -4,8 +4,8 @@ import discord
 import asyncio
 from discord.ext import commands
 
-from config import Config, DefaultConfigs
-#from personal_config import Config, DefaultConfigs
+#from config import Config, DefaultConfigs
+from personal_config import Config, DefaultConfigs
 
 
 # Stores the file that has the user input settings
@@ -57,8 +57,12 @@ async def on_message(message):
 	# Makes sure that only TRUSTED users can use these commands
 	if msg in config.TrustedCommands:
 		if config.Trusted_Permissions is None and str(message.author.top_role) in config.Role_Permissions:
+			# Delete all of the bot's previous outputs
+			if msg == 'delete':
+				pass
+
 			# Toggles shuffle for the queue
-			if msg == 'shuffle':
+			elif msg == 'shuffle':
 				pass
 
 			# Toggles storing the youtube videos into the current autoplaylist (should not add duplicates)
@@ -69,11 +73,17 @@ async def on_message(message):
 			elif msg == 'summon':
 				pass
 
+			# CHange the volume level of the music
 			elif msg.startswith('v'):
 				pass
+			
 		elif message.author.id in config.Trusted_Permissions:
+			# Delete all of the bot's previous outputs
+			if msg == 'delete':
+				pass
+
 			# Toggles shuffle for the queue
-			if msg == 'shuffle':
+			elif msg == 'shuffle':
 				pass
 
 			# Toggles storing the youtube videos into the current autoplaylist (should not add duplicates)
