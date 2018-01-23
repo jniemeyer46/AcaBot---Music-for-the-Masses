@@ -4,7 +4,7 @@ class Config:
 	# Holds the commands that do not take any parameters
 	OwnerCommands = ['playlist', 'restart', 'shutdown']
 	TrustedCommands = ['shuffle','store', 'summon', 'v','volume']
-	GeneralCommands = ['help', 'np', 'pause', 'q', 'queue', 'quiet', 's', 'skip']
+	GeneralCommands = ['help', 'np', 'pause', 'p', 'play', 'q', 'queue', 'quiet', 's', 'skip']
 
 	def __init__(self, config_file):
 		config = configparser.ConfigParser(interpolation=None)

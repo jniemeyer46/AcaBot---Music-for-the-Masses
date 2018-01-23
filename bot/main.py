@@ -24,72 +24,86 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-	# Grabs message content, makes it all lowercase, and stores it in a variable
 	msg = message.content.lower()
+
+	# Determine whether the message was a command for the bot, parse out the Command_Prefix
+	if msg.startswith(config.Command_Prefix):
+		# Grabs message content, makes it all lowercase, and stores it in a variable
+		msg = msg[1:]
+	else:
+		return
 
 
 	'''------OWNER COMMANDS------'''
-	#print(message.author.top_role)
-	print(config.Autoplaylist)
 
 	# Makes sure the GIVEN owner of the server is the one using the command
-	if str(message.author.id) == str(config.Owner_ID):
-		await client.send_message(message.channel, "Test")
-
-		# Deals with commands that do not have extra parameters (EX: the shutdown command)
-		if msg[1:] in config.OwnerCommands:
-			await client.send_message(message.channel, "Testing")
-			'''# User enters a new playlist file for the bot to pull from (if empty it will not use an autoplaylist)
-			if msg.startswith('!playlist'):
+	if msg in config.OwnerCommands:
+		if str(message.author.id) == config.Owner_ID:
+			# User enters a new playlist file for the bot to pull from (if empty it will not use an autoplaylist)
+			if msg.startswith('playlist'):
 				pass
 
 			# This will restart the bot incase a problem occurs and it needs to be restarted (No clue how to do this one yet)
-			elif msg == '!restart':
-				print("Hello")
-
-			# Toggles shuffle for the queue
-			elif msg == '!shuffle':
-				pass
+			elif msg == 'restart':
+				print("This will not be implemented until the very end most likely.")
 
 			# Shuts down the bot (Not the correct way to do this, need to look into it still...  Technically works though atm)
-			elif msg == '!shutdown':
+			elif msg == 'shutdown':
 				sys.exit(0)
-
-			# Toggles storing the youtube videos into the current autoplaylist (should not add duplicates)
-			elif msg == '!store':
-				pass
-
-			# Summons the bot to the the caller's voice channel
-			elif msg == '!summon':
-				await summon(ctx.message.author.voice_channel)
-
-			# Outputs the current volume level or allows adjustment of volume level
-			elif msg.startswith('!v'):
-				pass'''
 
 
 	'''------TRUSTED COMMANDS------'''
 
-	'''elif message.author.id in TRUSTED_IDS:
-		pass
+	# Makes sure that only TRUSTED users can use these commands
+	if msg in config.TrustedCommands:
+		if config.Trusted_Permissions is None and str(message.author.top_role) in config.Role_Permissions:
+			# Toggles shuffle for the queue
+			if msg == 'shuffle':
+				pass
 
-	'''
+			# Toggles storing the youtube videos into the current autoplaylist (should not add duplicates)
+			elif msg == 'store':
+				pass
 
+			# Summons the bot to the the caller's voice channel
+			elif msg == 'summon':
+				pass
+
+			elif msg.startswith('v'):
+				pass
+		elif message.author.id in config.Trusted_Permissions:
+			# Toggles shuffle for the queue
+			if msg == 'shuffle':
+				pass
+
+			# Toggles storing the youtube videos into the current autoplaylist (should not add duplicates)
+			elif msg == 'store':
+				pass
+
+			# Summons the bot to the the caller's voice channel
+			elif msg == 'summon':
+				pass
+
+			elif msg.startswith('v'):
+				pass	
+	
 
 	'''------GENERAL COMMANDS------'''
 
-	# Check if the user message is a command for the bot not including the commands that take extra perameters
-	'''elif msg in Globals.GeneralCommands:
+	# Check for GENERAL command usage
+	if msg in config.GeneralCommands:
 		# Outputs information about the song that is currently playing
-		if msg == '!help':
+		if msg == 'help':
 			await client.send_message(message.channel, 
 					"~ - means that functionality has not yet been implemented as of yet. \n\n"
 
 					"OWNER SPECIFIC COMMANDS \n"
 					"	~!playlist <name of a .txt file> - This changed the autoplaylist to a user defined list (if no .txt file is specified the autoplaylist will be NONE). \n"
 					"	~!restart - restarts the bot. \n"
+					"	!shutdown - Kills AcaBot, RIP. \n\n"
+
+					"TRUSTED USER COMMANDS \n"
 					"	~!shuffle - Determines whether the queue should be shuffles (Toggled). \n"
-					"	!shutdown - Kills AcaBot, RIP. \n"
 					"	~!store - Determines whether songs that users play should be added to the current autoplaylist (Toggled). \n"
 					"	~!summon - Summons the bot to the caller's voice channel"
 					"	~!volume (or !v) - Changes the volume level for the entire server. \n\n"
@@ -106,41 +120,41 @@ async def on_message(message):
 				)
 
 		# Outputs information about the song that is currently playing
-		elif msg == '!np':
+		elif msg == 'np':
 			pass
 
 		# Pause the bot (Not sure if I want everyone to be able to do this or not)
-		elif msg == '!pause':
+		elif msg == 'pause':
 			pass
 
 		# Outputs the list of songs that have been queued by people in the discord channel
-		elif msg == '!q' or msg == '!queue':
+		elif msg == 'q' or msg == 'queue':
 			await client.send_message(message.channel, "Testing")
 
 		# If the owner uses this command it will mute the bot for the entire channel
 		# If anyone else uses this command it will only mute the bot for them alone
-		elif msg == '!quiet':
+		elif msg == 'quiet':
 			pass
 
 		# Skips the current song
-		elif msg == '!s' or msg == '!skip':
+		elif msg == 's' or msg == 'skip':
 			pass
 
-	# User enters a youtube link to be played
-	elif msg.startswith('!p'):
-		counter = 0
-		tmp = await client.send_message(message.channel, 'Calculating messages...')
-		async for log in client.logs_from(message.channel, limit=100000):
-			counter += 1
+		# User enters a youtube link to be played
+		elif msg.startswith('p'):
+			counter = 0
+			tmp = await client.send_message(message.channel, 'Calculating messages...')
+			async for log in client.logs_from(message.channel, limit=100000):
+				counter += 1
 
-		await client.edit_message(tmp, 'You have {} messages.' .format(counter))
+			await client.edit_message(tmp, 'You have {} messages.' .format(counter))
 
-	# User enters a new playlist file for the bot to pull from
-	elif msg.startswith('!roll'):
-		pass
+		# User enters a new playlist file for the bot to pull from
+		elif msg.startswith('roll'):
+			pass
 
 
-async def summon(self, ctx):
+'''async def summon(self, ctx):
 	summoned_channel = ctx.message.author.voice_channel
 	if summoned_channel is None:
 		await self.bot.say('You are not currently in a voice channel')
@@ -153,7 +167,6 @@ async def summon(self, ctx):
 		await state.voice.move_to(summoned_channel)
 
 	return True
-	'''
+'''
 
-
-client.run('Mzk3NTE0MTc5NzE3NzU4OTc3.DUZwKw.MgrCahtBQ6ONwyigpe0oJW3LwaI')
+client.run(config.Token)
