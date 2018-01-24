@@ -3,6 +3,7 @@ import time
 import random
 import discord
 import asyncio
+import itertools
 from discord.ext import commands
 
 import commands
@@ -191,7 +192,9 @@ async def on_message(message):
 
 		# Outputs the list of songs that have been queued by people in the discord channel
 		elif msg[0] == 'q' or msg == 'queue':
-			pass
+			await client.send_message(message.channel, 
+					config.UserPlaylist
+				)
 
 		# If the owner uses this command it will mute the bot for the entire channel
 		# If anyone else uses this command it will only mute the bot for them alone
@@ -204,16 +207,22 @@ async def on_message(message):
 
 		# User enters a youtube link to be played
 		elif msg[0].startswith('p'):
-			counter = 0
-			tmp = await client.send_message(message.channel, 'Calculating messages...')
-			async for log in client.logs_from(message.channel, limit=100000):
-				counter += 1
-
-			await client.edit_message(tmp, 'You have {} messages.' .format(counter))
+			if 'www.youtube.com/watch' in msg[1]:
+				config.UserPlaylist.append(msg[1])
 
 		# User enters a new playlist file for the bot to pull from
 		elif msg[0].startswith('roll'):
-			pass
+			dice = ["".join(x) for _, x in itertools.groupby(msg[1], key=str.isdigit)]
+
+			dice_rolls = []
+			for i in range(0, int(dice[0])):
+				dice_rolls.append(random.randrange(1, int(dice[2])+1))
+
+			print(dice_rolls)
+			await client.send_message(message.channel,
+					'The following are your rolls in order from left to right: \n\t{}' .format(dice_rolls)
+				)
+
 
 
 '''async def summon(self, ctx):
