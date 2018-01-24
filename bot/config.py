@@ -30,7 +30,7 @@ class Config:
 		self.Volume = config.getfloat('MusicBot', 'Volume', fallback = DefaultConfigs.Default_Volume)
 
 		# .getboolean commands
-		self.Save = config.getboolean('MusicBot', 'Save', fallback = DefaultConfigs.Save_to_Playlist)
+		self.Store = config.getboolean('MusicBot', 'Save', fallback = DefaultConfigs.Save_to_Playlist)
 		self.Shuffle = config.getboolean('MusicBot', 'Shuffle', fallback = DefaultConfigs.Shuffle_Queue)
 
 		# Make sure all is good

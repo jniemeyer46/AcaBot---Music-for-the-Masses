@@ -5,6 +5,7 @@ import discord
 import asyncio
 from discord.ext import commands
 
+import commands
 from config import Config, DefaultConfigs
 #from personal_config import Config, DefaultConfigs
 
@@ -30,7 +31,7 @@ async def on_message(message):
 	# Determine whether the message was a command for the bot, parse out the Command_Prefix
 	if msg.startswith(config.Command_Prefix):
 		# Grabs message content, makes it all lowercase, and stores it in a variable
-		msg = msg[1:]
+		msg = msg[1:].split(' ')
 	else:
 		return
 
@@ -38,28 +39,34 @@ async def on_message(message):
 	'''------OWNER COMMANDS------'''
 
 	# Makes sure the GIVEN owner of the server is the one using the command
-	if msg in config.OwnerCommands:
+	if msg[0] in config.OwnerCommands:
 		if str(message.author.id) == config.Owner_ID:
 			# User enters a new playlist file for the bot to pull from (if empty it will not use an autoplaylist)
-			if msg.startswith('playlist'):
-				pass
+			if msg[0] == 'playlist':
+				if '.txt' in msg[1]:
+					await client.send_message(message.channel, 'You have changed AcaBot\'s playlist to {}' .format(msg[1]))
+					config.autoplaylist = msg[1]
+				elif '.txt' not in msg[1]:
+					await client.send_message(message.channel, 'You have changed AcaBot\'s playlist to {}.txt' .format(msg[1]))
+					config.autoplaylist = msg[1] + '.txt'
 
 			# This will restart the bot incase a problem occurs and it needs to be restarted (No clue how to do this one yet)
-			elif msg == 'restart':
+			elif msg[0] == 'restart':
 				print('This will not be implemented until the very end most likely.')
 
 			# Shuts down the bot (Not the correct way to do this, need to look into it still...  Technically works though atm)
-			elif msg == 'shutdown':
+			elif msg[0] == 'shutdown':
+				print('This will be correctly implemented later on, just wanted a fast way to kill AcaBot')
 				sys.exit(0)
 
 
 	'''------TRUSTED COMMANDS------'''
 
 	# Makes sure that only TRUSTED users can use these commands
-	if msg in config.TrustedCommands:
+	if msg[0] in config.TrustedCommands:
 		if config.Trusted_Permissions is None and str(message.author.top_role) in config.Role_Permissions:
 			# Delete all of the bot's previous outputs
-			if msg == 'delete':
+			if msg[0] == 'delete':
 				counter = 0
 				msgs = []
 				await client.send_message(message.channel, 'Calculating messages...')
@@ -78,24 +85,30 @@ async def on_message(message):
 				await client.delete_message()
 
 			# Toggles shuffle for the queue
-			elif msg == 'shuffle':
-				pass
+			elif msg[0] == 'shuffle':
+				if config.Shuffle:
+					config.Shuffle = False
+				elif not config.Shuffle:
+					config.Shuffle = True
 
 			# Toggles storing the youtube videos into the current autoplaylist (should not add duplicates)
-			elif msg == 'store':
-				pass
+			elif msg[0] == 'store':
+				if config.Store:
+					config.Store = False
+				elif not config.Store:
+					config.Store = True
 
 			# Summons the bot to the the caller's voice channel
-			elif msg == 'summon':
+			elif msg[0] == 'summon':
 				pass
 
 			# CHange the volume level of the music
-			elif msg.startswith('v'):
+			elif msg[0].startswith('v'):
 				pass
 
 		elif message.author.id in config.Trusted_Permissions:
 			# Delete all of the bot's previous outputs
-			if msg == 'delete':
+			if msg[0] == 'delete':
 				counter = 0
 				msgs = []
 				await client.send_message(message.channel, 'Calculating messages...')
@@ -114,39 +127,46 @@ async def on_message(message):
 				await client.delete_message()
 
 			# Toggles shuffle for the queue
-			elif msg == 'shuffle':
-				pass
+			elif msg[0] == 'shuffle':
+				if config.Shuffle:
+					config.Shuffle = False
+				elif not config.Shuffle:
+					config.Shuffle = True
 
 			# Toggles storing the youtube videos into the current autoplaylist (should not add duplicates)
-			elif msg == 'store':
-				pass
+			elif msg[0] == 'store':
+				if config.Store:
+					config.Store = False
+				elif not config.Store:
+					config.Store = True
 
 			# Summons the bot to the the caller's voice channel
-			elif msg == 'summon':
+			elif msg[0] == 'summon':
 				pass
 
-			elif msg.startswith('v'):
-				pass	
-	
+			# Sets the volume of the bot for the entire voice chat
+			elif msg[0].startswith('v'):
+				pass
+
 
 	'''------GENERAL COMMANDS------'''
 
 	# Check for GENERAL command usage
-	if msg in config.GeneralCommands:
+	if msg[0] in config.GeneralCommands:
 		# Outputs information about the song that is currently playing
-		if msg == 'help':
+		if msg[0] == 'help':
 			await client.send_message(message.channel, 
 					'~ - means that functionality has not yet been implemented as of yet. \n\n'
 
 					'OWNER SPECIFIC COMMANDS \n'
-					'	~{0}playlist <name of a .txt file> - This changed the autoplaylist to a user defined list (if no .txt file is specified the autoplaylist will be NONE). \n'
-					'	~{0}restart - restarts AcaBot. \n'
+					'	{0}playlist <name of a .txt file> - This changed the autoplaylist to a user defined list (if no .txt file is specified the autoplaylist will be NONE). \n'
+					'	~{0}restart - restarts AcaBot (Won\'t be implemented for a while). \n'
 					'	{0}shutdown - Kills AcaBot, RIP. \n\n'
 
 					'TRUSTED USER COMMANDS \n'
-					'	{0}delete - Deletes the last 100 commands for AcaBot and AcaBot message, can use multiple times to delete them all.'
-					'	~{0}shuffle - Determines whether the queue should be shuffles (Toggled). \n'
-					'	~{0}store - Determines whether songs that users play should be added to the current autoplaylist (Toggled). \n'
+					'	{0}delete - Deletes the last 100 commands for AcaBot and AcaBot message, can use multiple times to delete them all. \n--'
+					'	{0}shuffle - Determines whether the queue should be shuffles (Toggled). \n'
+					'	{0}store - Determines whether songs that users play should be added to the current autoplaylist (Toggled). \n'
 					'	~{0}summon - Summons the bot to the caller\'s voice channel'
 					'	~{0}volume (or !v) - Changes the volume level for the entire server. \n\n'
 
@@ -162,28 +182,28 @@ async def on_message(message):
 				)
 
 		# Outputs information about the song that is currently playing
-		elif msg == 'np':
+		elif msg[0] == 'np':
 			pass
 
 		# Pause the bot (Not sure if I want everyone to be able to do this or not)
-		elif msg == 'pause':
+		elif msg[0] == 'pause':
 			pass
 
 		# Outputs the list of songs that have been queued by people in the discord channel
-		elif msg == 'q' or msg == 'queue':
-			await client.send_message(message.channel, 'Testing')
+		elif msg[0] == 'q' or msg == 'queue':
+			pass
 
 		# If the owner uses this command it will mute the bot for the entire channel
 		# If anyone else uses this command it will only mute the bot for them alone
-		elif msg == 'quiet':
+		elif msg[0] == 'quiet':
 			pass
 
 		# Skips the current song
-		elif msg == 's' or msg == 'skip':
+		elif msg[0] == 's' or msg == 'skip':
 			pass
 
 		# User enters a youtube link to be played
-		elif msg.startswith('p'):
+		elif msg[0].startswith('p'):
 			counter = 0
 			tmp = await client.send_message(message.channel, 'Calculating messages...')
 			async for log in client.logs_from(message.channel, limit=100000):
@@ -192,7 +212,7 @@ async def on_message(message):
 			await client.edit_message(tmp, 'You have {} messages.' .format(counter))
 
 		# User enters a new playlist file for the bot to pull from
-		elif msg.startswith('roll'):
+		elif msg[0].startswith('roll'):
 			pass
 
 
