@@ -7,8 +7,8 @@ import itertools
 from discord.ext import commands
 
 import commands
-from config import Config, DefaultConfigs
-#from personal_config import Config, DefaultConfigs
+#from config import Config, DefaultConfigs
+from personal_config import Config, DefaultConfigs
 
 
 # Stores the file that has the user input settings
@@ -59,6 +59,9 @@ async def on_message(message):
 			elif msg[0] == 'shutdown':
 				print('This will be correctly implemented later on, just wanted a fast way to kill AcaBot')
 				sys.exit(0)
+			elif msg[0] == 'testing':
+				print(message.author.voice.voice_channel)
+				print()
 
 
 	'''------TRUSTED COMMANDS------'''
@@ -83,7 +86,10 @@ async def on_message(message):
 
 				await client.send_message(message.channel, 'You have delete {} of my messages...  Well make that {} messages' .format(counter, counter+1))
 				time.sleep(5)
-				await client.delete_message()
+
+				async for log in client.logs_from(message.channel):
+					if str(log.author.id) == client.user.id:
+						await client.delete_message(log)
 
 			# Toggles shuffle for the queue
 			elif msg[0] == 'shuffle':
@@ -101,7 +107,7 @@ async def on_message(message):
 
 			# Summons the bot to the the caller's voice channel
 			elif msg[0] == 'summon':
-				pass
+				await summon(message)
 
 			# CHange the volume level of the music
 			elif msg[0].startswith('v'):
@@ -125,7 +131,10 @@ async def on_message(message):
 
 				await client.send_message(message.channel, 'You have delete {} of my messages...  Well make that {} messages' .format(counter, counter+1))
 				time.sleep(5)
-				await client.delete_message()
+
+				async for log in client.logs_from(message.channel):
+					if str(log.author.id) == client.user.id:
+						await client.delete_message(log)
 
 			# Toggles shuffle for the queue
 			elif msg[0] == 'shuffle':
@@ -143,7 +152,7 @@ async def on_message(message):
 
 			# Summons the bot to the the caller's voice channel
 			elif msg[0] == 'summon':
-				pass
+				await summon(message)
 
 			# Sets the volume of the bot for the entire voice chat
 			elif msg[0].startswith('v'):
@@ -224,20 +233,22 @@ async def on_message(message):
 				)
 
 
-
-'''async def summon(self, ctx):
-	summoned_channel = ctx.message.author.voice_channel
+# Summons the bot to the voice channel of the message author if they have the proper permissions
+@client.event
+async def summon(message):
+	summoned_channel = message.author.voice.voice_channel
 	if summoned_channel is None:
-		await self.bot.say('You are not currently in a voice channel')
+		await client.send_message(message.channel, '{0}, You are not currently in a voice channel' .format(message.author.nick))
 		return False
 
-	state = self.get_voice_state(ctx.message.server)
-	if state.voice is None:
-		state.voice = await self.bot.join_voice_channel(summoned_channel)
+	voiceChannel = client.voice_clients
+	if not voiceChannel:
+		await client.join_voice_channel(summoned_channel)
+		print('AcaBot has joined the channel "{0}"!' .format(summoned_channel))
 	else:
-		await state.voice.move_to(summoned_channel)
-
+		for key in client.voice_clients:
+			await key.move_to(summoned_channel)
+			print('AcaBot has moved to the channel "{0}"!' .format(summoned_channel))
 	return True
-'''
 
 client.run(config.Token)
