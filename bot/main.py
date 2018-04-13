@@ -4,12 +4,12 @@ import random
 import discord
 import asyncio
 import itertools
+import youtube_dl
 from discord.ext import commands
 
 import commands
 #from config import Config, DefaultConfigs
 from personal_config import Config, DefaultConfigs
-
 
 # Stores the file that has the user input settings
 config_file = DefaultConfigs.Settings
@@ -18,6 +18,9 @@ config_file = DefaultConfigs.Settings
 client = discord.Client()
 # Holds all of AcaBot's configurations
 config = Config(config_file)
+
+if not discord.opus.is_loaded():
+	discord.opus.load_opus('opus.dll')
 
 
 @client.event
@@ -60,7 +63,11 @@ async def on_message(message):
 				print('This will be correctly implemented later on, just wanted a fast way to kill AcaBot')
 				sys.exit(0)
 			elif msg[0] == 'testing':
-				print(message.author.voice.voice_channel)
+				if client.voice_clients:
+					for voice in client.voice_clients:
+						channel = voice
+						player = await voice.create_ytdl_player('https://www.youtube.com/watch?v=eisW0skJ9fU')
+						player.start()
 
 
 	'''------TRUSTED COMMANDS------'''
