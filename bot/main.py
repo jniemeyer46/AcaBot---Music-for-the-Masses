@@ -61,7 +61,6 @@ async def on_message(message):
 				sys.exit(0)
 			elif msg[0] == 'testing':
 				print(message.author.voice.voice_channel)
-				print()
 
 
 	'''------TRUSTED COMMANDS------'''
@@ -174,10 +173,10 @@ async def on_message(message):
 					'	{0}shutdown - Kills AcaBot, RIP. \n\n'
 
 					'TRUSTED USER COMMANDS \n'
-					'	{0}delete - Deletes the last 100 commands for AcaBot and AcaBot message, can use multiple times to delete them all. \n--'
+					'	{0}delete - Deletes the last 100 commands for AcaBot and AcaBot message, can use multiple times to delete them all. \n'
 					'	{0}shuffle - Determines whether the queue should be shuffles (Toggled). \n'
 					'	{0}store - Determines whether songs that users play should be added to the current autoplaylist (Toggled). \n'
-					'	~{0}summon - Summons the bot to the caller\'s voice channel'
+					'	{0}summon - Summons the bot to the caller\'s voice channel'
 					'	~{0}volume (or !v) - Changes the volume level for the entire server. \n\n'
 
 					'COMMANDS FOR EVERYONE \n'

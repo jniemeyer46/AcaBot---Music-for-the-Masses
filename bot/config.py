@@ -2,7 +2,7 @@ import configparser
 
 class Config:
 	# Holds the commands that do not take any parameters
-	OwnerCommands = ['playlist', 'restart', 'shutdown']
+	OwnerCommands = ['playlist', 'restart', 'shutdown', 'testing']
 	TrustedCommands = ['delete', 'shuffle','store', 'summon', 'v','volume']
 	GeneralCommands = ['help', 'np', 'pause', 'p', 'play', 'q', 'queue', 'quiet', 'roll', 's', 'skip']
 
