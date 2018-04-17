@@ -22,6 +22,8 @@ config = Config(config_file)
 if not discord.opus.is_loaded():
 	discord.opus.load_opus('opus.dll')
 
+voice = None
+player = None
 
 @client.event
 async def on_ready():
@@ -31,13 +33,12 @@ async def on_ready():
 @client.event
 async def on_message(message):
 	msg = message.content.lower()
+	global player
 
 	# Determine whether the message was a command for the bot, parse out the Command_Prefix
 	if msg.startswith(config.Command_Prefix):
 		# Grabs message content, makes it all lowercase, and stores it in a variable
 		msg = msg[1:].split(' ')
-	else:
-		return
 
 
 	'''------OWNER COMMANDS------'''
@@ -63,11 +64,7 @@ async def on_message(message):
 				print('This will be correctly implemented later on, just wanted a fast way to kill AcaBot')
 				sys.exit(0)
 			elif msg[0] == 'testing':
-				if client.voice_clients:
-					for voice in client.voice_clients:
-						channel = voice
-						player = await voice.create_ytdl_player('https://www.youtube.com/watch?v=eisW0skJ9fU')
-						player.start()
+				pass
 
 
 	'''------TRUSTED COMMANDS------'''
@@ -101,23 +98,34 @@ async def on_message(message):
 			elif msg[0] == 'shuffle':
 				if config.Shuffle:
 					config.Shuffle = False
+					await client.send_message(message.channel, 'The queued songs will not be shuffled.')
 				elif not config.Shuffle:
 					config.Shuffle = True
+					await client.send_message(message.channel, 'The queued songs will be shuffled.')
 
 			# Toggles storing the youtube videos into the current autoplaylist (should not add duplicates)
 			elif msg[0] == 'store':
 				if config.Store:
 					config.Store = False
+					await client.send_message(message.channel, 'The queued songs will not longer be added to the autoplaylist.')
 				elif not config.Store:
 					config.Store = True
+					await client.send_message(message.channel, 'The queued songs will now be added to the autoplaylist.')
 
 			# Summons the bot to the the caller's voice channel
 			elif msg[0] == 'summon':
 				await summon(message)
+				await MusicPlayer()
 
 			# CHange the volume level of the music
 			elif msg[0].startswith('v'):
-				pass
+				if player is not None:
+					if len(msg) > 1:
+						if msg[1].isdigit():
+							player.volume = int(msg[1]) / 100
+							await client.send_message(message.channel, 'The volume is now set to {}' .format(msg[1]))
+					else:
+						await client.send_message(message.channel, 'The current volume is {}' .format(player.volume * 100))
 
 		elif message.author.id in config.Trusted_Permissions:
 			# Delete all of the bot's previous outputs
@@ -146,23 +154,34 @@ async def on_message(message):
 			elif msg[0] == 'shuffle':
 				if config.Shuffle:
 					config.Shuffle = False
+					await client.send_message(message.channel, 'The queued songs will not be shuffled.')
 				elif not config.Shuffle:
 					config.Shuffle = True
+					await client.send_message(message.channel, 'The queued songs will be shuffled.')
 
 			# Toggles storing the youtube videos into the current autoplaylist (should not add duplicates)
 			elif msg[0] == 'store':
 				if config.Store:
 					config.Store = False
+					await client.send_message(message.channel, 'The queued songs will no longer be added to the autoplaylist.')
 				elif not config.Store:
 					config.Store = True
+					await client.send_message(message.channel, 'The queued songs will now be added to the autoplaylist.')
 
 			# Summons the bot to the the caller's voice channel
 			elif msg[0] == 'summon':
 				await summon(message)
+				await MusicPlayer()
 
 			# Sets the volume of the bot for the entire voice chat
 			elif msg[0].startswith('v'):
-				pass
+				if player is not None:
+					if len(msg) > 1:
+						if msg[1].isdigit():
+							player.volume = int(msg[1]) / 100
+							await client.send_message(message.channel, 'The volume is now set to {}' .format(msg[1]))
+					else:
+						await client.send_message(message.channel, 'The current volume is {}' .format(player.volume * 100))
 
 
 	'''------GENERAL COMMANDS------'''
@@ -199,11 +218,12 @@ async def on_message(message):
 
 		# Outputs information about the song that is currently playing
 		elif msg[0] == 'np':
-			pass
+			await client.send_message(message.channel, 
+				'You are currently listening to {0}.' .format(player.title))
 
 		# Pause the bot (Not sure if I want everyone to be able to do this or not)
 		elif msg[0] == 'pause':
-			pass
+			player.pause()
 
 		# Outputs the list of songs that have been queued by people in the discord channel
 		elif msg[0] == 'q' or msg == 'queue':
@@ -218,12 +238,13 @@ async def on_message(message):
 
 		# Skips the current song
 		elif msg[0] == 's' or msg == 'skip':
-			pass
+			player.stop()
 
 		# User enters a youtube link to be played
 		elif msg[0].startswith('p'):
 			if 'www.youtube.com/watch' in msg[1]:
-				config.UserPlaylist.append(msg[1])
+				url = message.content.split(' ')
+				config.UserPlaylist.append(url[1])
 
 		# User enters a new playlist file for the bot to pull from
 		elif msg[0].startswith('roll'):
@@ -240,21 +261,55 @@ async def on_message(message):
 
 
 # Summons the bot to the voice channel of the message author if they have the proper permissions
-@client.event
 async def summon(message):
+	global voice
 	summoned_channel = message.author.voice.voice_channel
+
 	if summoned_channel is None:
-		await client.send_message(message.channel, '{0}, You are not currently in a voice channel' .format(message.author.nick))
+		await client.send_message(message.channel, '{}, You are not currently in a voice channel' .format(message.author.nick))
 		return False
 
 	voiceChannel = client.voice_clients
+
 	if not voiceChannel:
-		await client.join_voice_channel(summoned_channel)
-		print('AcaBot has joined the channel "{0}"!' .format(summoned_channel))
+		voice = await client.join_voice_channel(summoned_channel)
+		print('AcaBot has joined the channel "{}"!' .format(summoned_channel))
 	else:
 		for key in client.voice_clients:
 			await key.move_to(summoned_channel)
-			print('AcaBot has moved to the channel "{0}"!' .format(summoned_channel))
+			print('AcaBot has moved to the channel "{}"!' .format(summoned_channel))
 	return True
+
+
+async def MusicPlayer():
+	global voice
+	global player
+
+	if config.UserPlaylist:
+		print(config.UserPlaylist[0])
+		player = await voice.create_ytdl_player(config.UserPlaylist[0])
+		config.UserPlaylist.pop(0)
+		player.start()
+		await asyncio.sleep(player.duration)
+		player.stop()
+	else:
+		player = await voice.create_ytdl_player(random.choice(config.Autoplaylist))
+		player.start()
+		await asyncio.sleep(player.duration)
+		player.stop()
+
+	while not player.is_playing():
+		if config.UserPlaylist:
+			player = await voice.create_ytdl_player(config.UserPlaylist[0])
+			config.UserPlaylist.pop(0)
+			player.start()
+			await asyncio.sleep(player.duration)
+			player.stop()
+		elif config.Autoplaylist:
+			player = await voice.create_ytdl_player(random.choice(config.Autoplaylist))
+			player.start()
+			await asyncio.sleep(player.duration)
+			player.stop()
+
 
 client.run(config.Token)
