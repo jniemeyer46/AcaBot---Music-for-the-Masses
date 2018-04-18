@@ -119,13 +119,13 @@ async def on_message(message):
 
 			# CHange the volume level of the music
 			elif msg[0].startswith('v'):
-				if player is not None:
-					if len(msg) > 1:
-						if msg[1].isdigit():
-							player.volume = int(msg[1]) / 100
-							await client.send_message(message.channel, 'The volume is now set to {}' .format(msg[1]))
-					else:
-						await client.send_message(message.channel, 'The current volume is {}' .format(player.volume * 100))
+				if len(msg) > 1:
+					if msg[1].isdigit():
+						player.volume = int(msg[1]) / 100
+						config.Volume = int(msg[1]) / 100
+						await client.send_message(message.channel, 'The volume is now set to {}' .format(msg[1]))
+				else:
+					await client.send_message(message.channel, 'The current volume is {}' .format(config.Volume * 100))
 
 		elif message.author.id in config.Trusted_Permissions:
 			# Delete all of the bot's previous outputs
@@ -175,13 +175,13 @@ async def on_message(message):
 
 			# Sets the volume of the bot for the entire voice chat
 			elif msg[0].startswith('v'):
-				if player is not None:
-					if len(msg) > 1:
-						if msg[1].isdigit():
-							player.volume = int(msg[1]) / 100
-							await client.send_message(message.channel, 'The volume is now set to {}' .format(msg[1]))
-					else:
-						await client.send_message(message.channel, 'The current volume is {}' .format(player.volume * 100))
+				if len(msg) > 1:
+					if msg[1].isdigit():
+						player.volume = int(msg[1]) / 100
+						config.Volume = int(msg[1]) / 100
+						await client.send_message(message.channel, 'The volume is now set to {}' .format(msg[1]))
+				else:
+					await client.send_message(message.channel, 'The current volume is {}' .format(config.Volume * 100))
 
 
 	'''------GENERAL COMMANDS------'''
@@ -203,17 +203,17 @@ async def on_message(message):
 					'	{0}shuffle - Determines whether the queue should be shuffles (Toggled). \n'
 					'	{0}store - Determines whether songs that users play should be added to the current autoplaylist (Toggled). \n'
 					'	{0}summon - Summons the bot to the caller\'s voice channel'
-					'	~{0}volume (or !v) - Changes the volume level for the entire server. \n\n'
+					'	{0}volume (or !v) - Changes the volume level for the entire server. \n\n'
 
 					'COMMANDS FOR EVERYONE \n'
 					'	{0}help - Outputs commands for AcaBot. \n'
-					'	~{0}np - Outputs information on the song that is currently playing. \n'
-					'	~{0}pause - Pauses the currently playing song. \n'
-					'	~{0}queue (or !q) - Outputs the list of songs that users have asked to be played (in order). \n'
+					'	{0}np - Outputs information on the song that is currently playing. \n'
+					'	{0}pause - Pauses the currently playing song. \n'
+					'	{0}queue (or !q) - Outputs the list of songs that users have asked to be played (in order). \n'
 					'	~{0}quiet - Mutes AcaBot for a single user (if owner uses the command it mutes the bot for the entire server). \n'
-					'	~{0}skip (or !s) - Skips the currently playing song. \n'
-					'	~{0}play <YOUTUBE URL> (or !p) - This will queue a song to be played (will be sentence recognition later). \n'
-					'	~{0}roll <<number of dice>d<type of dice>> - Will roll a specified dice for the user (example: !roll 5d20 (rolls 5 dice that are 20 sided)). \n' .format(config.Command_Prefix)
+					'	{0}skip (or !s) - Skips the currently playing song. \n'
+					'	{0}play <YOUTUBE URL> (or !p) - This will queue a song to be played (will be sentence recognition later). \n'
+					'	{0}roll <<number of dice>d<type of dice>> - Will roll a specified dice for the user (example: !roll 5d20 (rolls 5 dice that are 20 sided)). \n' .format(config.Command_Prefix)
 				)
 
 		# Outputs information about the song that is currently playing
@@ -223,12 +223,13 @@ async def on_message(message):
 
 		# Pause the bot (Not sure if I want everyone to be able to do this or not)
 		elif msg[0] == 'pause':
-			player.pause()
+			if player is not None:
+				player.pause()
 
 		# Outputs the list of songs that have been queued by people in the discord channel
 		elif msg[0] == 'q' or msg == 'queue':
 			await client.send_message(message.channel, 
-					config.UserPlaylist
+					config.Userplaylist
 				)
 
 		# If the owner uses this command it will mute the bot for the entire channel
@@ -238,13 +239,29 @@ async def on_message(message):
 
 		# Skips the current song
 		elif msg[0] == 's' or msg == 'skip':
-			player.stop()
+			if player is not None:
+				player.stop()
 
 		# User enters a youtube link to be played ADD STORE HERE
 		elif msg[0].startswith('p'):
 			if 'www.youtube.com/watch' in msg[1]:
-				url = message.content.split(' ')
-				config.UserPlaylist.append(url[1])
+				if config.Store:
+					# Required in order to fix casing
+					url = message.content.split(' ')
+
+					if url[1] not in config.Autoplaylist:
+						# Open the Autoplaylist file and put the new url in
+						with open('playlists/{}.txt' .format(config.AutoplaylistName), 'a') as f:
+							f.write('{}\n' .format(url[1]))
+						f.close()
+
+						# Queue up the songs
+						config.Userplaylist.append(url[1])
+						config.Autoplaylist.append(url[1])
+				else:
+					# Required in order to fix casing
+					url = message.content.split(' ')
+					config.Userplaylist.append(url[1])
 
 		# User enters a new playlist file for the bot to pull from
 		elif msg[0].startswith('roll'):
@@ -254,7 +271,6 @@ async def on_message(message):
 			for i in range(0, int(dice[0])):
 				dice_rolls.append(random.randrange(1, int(dice[2])+1))
 
-			print(dice_rolls)
 			await client.send_message(message.channel,
 					'The following are your rolls in order from left to right: \n\t{}' .format(dice_rolls)
 				)
@@ -290,24 +306,30 @@ async def MusicPlayer():
 	global player
 
 	# Initial music video queued here
-	if config.UserPlaylist:
+	if config.Userplaylist:
 		if config.Shuffle:
-			url = random.choice(config.UserPlaylist)
+			url = random.choice(config.Userplaylist)
 
 			# Creates a stream for music playing
 			player = await voice.create_ytdl_player(url)
-			config.UserPlaylist.remove(url)
+			config.Userplaylist.remove(url)
+			player.volume = config.Volume
+
 			# Begins playing music through voice chat
 			player.start()
 		else:
 			# Creates a stream for music playing
-			player = await voice.create_ytdl_player(config.UserPlaylist[0])
-			config.UserPlaylist.pop(0)
+			player = await voice.create_ytdl_player(config.Userplaylist[0])
+			config.Userplaylist.pop(0)
+			player.volume = config.Volume
+
 			# Begins playing music through voice chat
 			player.start()
 	elif config.Autoplaylist:
 		# Creates a stream for music playing
 		player = await voice.create_ytdl_player(random.choice(config.Autoplaylist))
+		player.volume = config.Volume
+
 		# Begins playing music through voice chat
 		player.start()
 
@@ -319,24 +341,30 @@ async def MusicPlayer():
 		else:
 			player.stop()
 
-			if config.UserPlaylist:
+			if config.Userplaylist:
 				if config.Shuffle:
-					url = random.choice(config.UserPlaylist)
+					url = random.choice(config.Userplaylist)
 
 					# Creates a stream for music playing
 					player = await voice.create_ytdl_player(url)
-					config.UserPlaylist.remove(url)
+					config.Userplaylist.remove(url)
+					player.volume = config.Volume
+
 					# Begins playing music through voice chat
 					player.start()
 				else:
 					# Creates a stream for music playing
-					player = await voice.create_ytdl_player(config.UserPlaylist[0])
-					config.UserPlaylist.pop(0)
+					player = await voice.create_ytdl_player(config.Userplaylist[0])
+					config.Userplaylist.pop(0)
+					player.volume = config.Volume
+
 					# Begins playing music through voice chat
 					player.start()
 			elif config.Autoplaylist:
 				# Creates a stream for music playing
 				player = await voice.create_ytdl_player(random.choice(config.Autoplaylist))
+				player.volume = config.Volume
+
 				# Begins playing music through voice chat
 				player.start()
 

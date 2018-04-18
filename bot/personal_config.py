@@ -6,7 +6,7 @@ class Config:
 	TrustedCommands = ['delete', 'shuffle','store', 'summon', 'v','volume']
 	GeneralCommands = ['help', 'np', 'pause', 'p', 'play', 'q', 'queue', 'quiet', 'roll', 's', 'skip']
 
-	UserPlaylist = []
+	Userplaylist = []
 
 	def __init__(self, config_file):
 		config = configparser.ConfigParser(interpolation=None)
@@ -26,7 +26,7 @@ class Config:
 		self.Role_Permissions = config.get('TrustedPermissions', 'Role_Permissions', fallback = DefaultConfigs.Default_Role_Permissions).split(' ')
 		self.Trusted_Permissions = config.get('TrustedPermissions', 'Trusted_Permissions', fallback = DefaultConfigs.Default_Trusted_Permissions)
 		self.Command_Prefix = config.get('TextChannels', 'Command_Prefix', fallback = DefaultConfigs.Command_Prefix)
-		self.Autoplaylist = config.get('MusicBot', 'Autoplaylist', fallback = DefaultConfigs.Default_Autoplaylist)
+		self.AutoplaylistName = config.get('MusicBot', 'Autoplaylist', fallback = DefaultConfigs.Default_Autoplaylist)
 
 		# .getfloat commands
 		self.Volume = config.getfloat('MusicBot', 'Volume', fallback = DefaultConfigs.Default_Volume)
@@ -46,8 +46,8 @@ class Config:
 
 
 	def Create_Autoplaylist(self):
-		if self.Autoplaylist is not None and self.Autoplaylist != 'None':
-			with open('playlists/' + self.Autoplaylist + '.txt') as f:
+		if self.AutoplaylistName is not None and self.AutoplaylistName != 'None':
+			with open('playlists/' + self.AutoplaylistName + '.txt') as f:
 				self.Autoplaylist = f.read().split()
 
 
