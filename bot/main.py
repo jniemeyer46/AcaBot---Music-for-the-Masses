@@ -240,7 +240,7 @@ async def on_message(message):
 		elif msg[0] == 's' or msg == 'skip':
 			player.stop()
 
-		# User enters a youtube link to be played
+		# User enters a youtube link to be played ADD STORE HERE
 		elif msg[0].startswith('p'):
 			if 'www.youtube.com/watch' in msg[1]:
 				url = message.content.split(' ')
@@ -265,12 +265,15 @@ async def summon(message):
 	global voice
 	summoned_channel = message.author.voice.voice_channel
 
+	# Checks to see if the message sender is in a voice channel
 	if summoned_channel is None:
 		await client.send_message(message.channel, '{}, You are not currently in a voice channel' .format(message.author.nick))
 		return False
 
+	# Makes a list of the voice channels joined by the bot
 	voiceChannel = client.voice_clients
 
+	# Places the bot in the appropriate voice channel
 	if not voiceChannel:
 		voice = await client.join_voice_channel(summoned_channel)
 		print('AcaBot has joined the channel "{}"!' .format(summoned_channel))
@@ -281,35 +284,61 @@ async def summon(message):
 	return True
 
 
+# Attempts to constantly play music (needs reworked)
 async def MusicPlayer():
 	global voice
 	global player
 
+	# Initial music video queued here
 	if config.UserPlaylist:
-		print(config.UserPlaylist[0])
-		player = await voice.create_ytdl_player(config.UserPlaylist[0])
-		config.UserPlaylist.pop(0)
-		player.start()
-		await asyncio.sleep(player.duration)
-		player.stop()
-	else:
-		player = await voice.create_ytdl_player(random.choice(config.Autoplaylist))
-		player.start()
-		await asyncio.sleep(player.duration)
-		player.stop()
+		if config.Shuffle:
+			url = random.choice(config.UserPlaylist)
 
-	while not player.is_playing():
-		if config.UserPlaylist:
+			# Creates a stream for music playing
+			player = await voice.create_ytdl_player(url)
+			config.UserPlaylist.remove(url)
+			# Begins playing music through voice chat
+			player.start()
+		else:
+			# Creates a stream for music playing
 			player = await voice.create_ytdl_player(config.UserPlaylist[0])
 			config.UserPlaylist.pop(0)
+			# Begins playing music through voice chat
 			player.start()
-			await asyncio.sleep(player.duration)
+	elif config.Autoplaylist:
+		# Creates a stream for music playing
+		player = await voice.create_ytdl_player(random.choice(config.Autoplaylist))
+		# Begins playing music through voice chat
+		player.start()
+
+	# Continuous Loop that will continuously check if there is music playing.
+	# Wait if there is music playing, queue a song otherwise.
+	while True:
+		if player.is_playing():
+			await asyncio.sleep(2)
+		else:
 			player.stop()
-		elif config.Autoplaylist:
-			player = await voice.create_ytdl_player(random.choice(config.Autoplaylist))
-			player.start()
-			await asyncio.sleep(player.duration)
-			player.stop()
+
+			if config.UserPlaylist:
+				if config.Shuffle:
+					url = random.choice(config.UserPlaylist)
+
+					# Creates a stream for music playing
+					player = await voice.create_ytdl_player(url)
+					config.UserPlaylist.remove(url)
+					# Begins playing music through voice chat
+					player.start()
+				else:
+					# Creates a stream for music playing
+					player = await voice.create_ytdl_player(config.UserPlaylist[0])
+					config.UserPlaylist.pop(0)
+					# Begins playing music through voice chat
+					player.start()
+			elif config.Autoplaylist:
+				# Creates a stream for music playing
+				player = await voice.create_ytdl_player(random.choice(config.Autoplaylist))
+				# Begins playing music through voice chat
+				player.start()
 
 
 client.run(config.Token)
