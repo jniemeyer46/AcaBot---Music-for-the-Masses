@@ -195,7 +195,7 @@ async def on_message(message):
 					'~ - means that functionality has not yet been implemented as of yet. \n\n'
 
 					'OWNER SPECIFIC COMMANDS \n'
-					'	{0}playlist <name of a .txt file> - This changed the autoplaylist to a user defined list (if no .txt file is specified the autoplaylist will be NONE). \n'
+					'	~{0}playlist <name of a .txt file> - This changed the autoplaylist to a user defined list (if no .txt file is specified the autoplaylist will be NONE). \n'
 					'	~{0}restart - restarts AcaBot (Won\'t be implemented for a while). \n'
 					'	{0}shutdown - Kills AcaBot, RIP. \n\n'
 
