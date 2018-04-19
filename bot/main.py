@@ -22,6 +22,7 @@ config = Config(config_file)
 if not discord.opus.is_loaded():
 	discord.opus.load_opus('opus.dll')
 
+# Variable Holders
 voice = None
 player = None
 
@@ -248,6 +249,7 @@ async def on_message(message):
 				if config.Store:
 					# Required in order to fix casing
 					url = message.content.split(' ')
+					config.Userplaylist.append(url[1])
 
 					if url[1] not in config.Autoplaylist:
 						# Open the Autoplaylist file and put the new url in
@@ -256,7 +258,6 @@ async def on_message(message):
 						f.close()
 
 						# Queue up the songs
-						config.Userplaylist.append(url[1])
 						config.Autoplaylist.append(url[1])
 				else:
 					# Required in order to fix casing
