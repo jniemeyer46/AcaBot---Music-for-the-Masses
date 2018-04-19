@@ -108,7 +108,7 @@ async def on_message(message):
 			elif msg[0] == 'store':
 				if config.Store:
 					config.Store = False
-					await client.send_message(message.channel, 'The queued songs will not longer be added to the autoplaylist.')
+					await client.send_message(message.channel, 'The queued songs will no longer be added to the autoplaylist.')
 				elif not config.Store:
 					config.Store = True
 					await client.send_message(message.channel, 'The queued songs will now be added to the autoplaylist.')
@@ -116,7 +116,6 @@ async def on_message(message):
 			# Summons the bot to the the caller's voice channel
 			elif msg[0] == 'summon':
 				await summon(message)
-				await MusicPlayer()
 
 			# CHange the volume level of the music
 			elif msg[0].startswith('v'):
@@ -172,7 +171,8 @@ async def on_message(message):
 			# Summons the bot to the the caller's voice channel
 			elif msg[0] == 'summon':
 				await summon(message)
-				await MusicPlayer()
+				if player is not None:
+					await MusicPlayer()
 
 			# Sets the volume of the bot for the entire voice chat
 			elif msg[0].startswith('v'):
@@ -293,6 +293,7 @@ async def summon(message):
 	# Places the bot in the appropriate voice channel
 	if not voiceChannel:
 		voice = await client.join_voice_channel(summoned_channel)
+		await MusicPlayer()
 		print('AcaBot has joined the channel "{}"!' .format(summoned_channel))
 	else:
 		for key in client.voice_clients:
