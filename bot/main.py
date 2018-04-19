@@ -209,7 +209,7 @@ async def on_message(message):
 					'COMMANDS FOR EVERYONE \n'
 					'	{0}help - Outputs commands for AcaBot. \n'
 					'	{0}np - Outputs information on the song that is currently playing. \n'
-					'	{0}pause - Pauses the currently playing song. \n'
+					'	~{0}pause - Pauses the currently playing song. \n'
 					'	{0}queue (or !q) - Outputs the list of songs that users have asked to be played (in order). \n'
 					'	~{0}quiet - Mutes AcaBot for a single user (if owner uses the command it mutes the bot for the entire server). \n'
 					'	{0}skip (or !s) - Skips the currently playing song. \n'
@@ -225,7 +225,8 @@ async def on_message(message):
 		# Pause the bot (Not sure if I want everyone to be able to do this or not)
 		elif msg[0] == 'pause':
 			if player is not None:
-				player.pause()
+				if player.is_playing():
+					player.pause()
 
 		# Outputs the list of songs that have been queued by people in the discord channel
 		elif msg[0] == 'q' or msg == 'queue':
@@ -340,7 +341,7 @@ async def MusicPlayer():
 	while True:
 		if player.is_playing():
 			await asyncio.sleep(2)
-		else:
+		elif player.is_done():
 			player.stop()
 
 			if config.Userplaylist:
