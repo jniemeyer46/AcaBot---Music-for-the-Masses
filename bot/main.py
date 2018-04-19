@@ -224,9 +224,7 @@ async def on_message(message):
 
 		# Pause the bot (Not sure if I want everyone to be able to do this or not)
 		elif msg[0] == 'pause':
-			if player is not None:
-				if player.is_playing():
-					player.pause()
+			pass
 
 		# Outputs the list of songs that have been queued by people in the discord channel
 		elif msg[0] == 'q' or msg == 'queue':
