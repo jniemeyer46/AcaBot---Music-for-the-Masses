@@ -5,7 +5,9 @@ import discord
 import asyncio
 import itertools
 import youtube_dl
+import os.path
 from discord.ext import commands
+from math import floor
 
 import commands
 #from config import Config, DefaultConfigs
@@ -47,23 +49,52 @@ async def on_message(message):
 	# Makes sure the GIVEN owner of the server is the one using the command
 	if msg[0] in config.OwnerCommands:
 		if str(message.author.id) == config.Owner_ID:
-			# User enters a new playlist file for the bot to pull from (if empty it will not use an autoplaylist)
-			if msg[0] == 'playlist':
-				if '.txt' in msg[1]:
-					await client.send_message(message.channel, 'You have changed AcaBot\'s playlist to {}' .format(msg[1]))
-					config.autoplaylist = msg[1]
-				elif '.txt' not in msg[1]:
-					await client.send_message(message.channel, 'You have changed AcaBot\'s playlist to {}.txt' .format(msg[1]))
-					config.autoplaylist = msg[1] + '.txt'
-
-			# This will restart the bot incase a problem occurs and it needs to be restarted (No clue how to do this one yet)
-			elif msg[0] == 'restart':
-				print('This will not be implemented until the very end most likely.')
-
 			# Shuts down the bot (Not the correct way to do this, need to look into it still...  Technically works though atm)
-			elif msg[0] == 'shutdown':
-				print('This will be correctly implemented later on, just wanted a fast way to kill AcaBot')
-				sys.exit(0)
+			if msg[0] == 'shutdown':
+				# Just some holders
+				counter = 0
+				msgs = []
+
+				# Just a friends message
+				await client.send_message(message.channel, 'Cleaning the chat before I leave...')
+
+				# Create the list to be deleted
+				async for log in client.logs_from(message.channel):
+					if str(log.author.id) == client.user.id or log.content.startswith(config.Command_Prefix):
+						msgs.append(log)
+						counter += 1
+
+				# Time to delete the old commands
+				if len(msgs) < 2:
+					await client.delete_message(msgs[0])
+				elif len(msgs) >= 2 and len(msgs) <= 100:
+					await client.delete_messages(msgs)
+
+				# Just a funny message
+				await client.send_message(message.channel, 'I was always taught to leave a place better than I found it, {} total deleted messages.' .format(counter+1))
+
+				await asyncio.sleep(5)
+
+				# Deleting the funny message
+				async for log in client.logs_from(message.channel):
+					if str(log.author.id) == client.user.id:
+						await client.delete_message(log)
+
+				# Stop the music
+				if player is not None and player.is_playing():
+					player.stop()
+
+				# Disconnect from voice
+				for voice in client.voice_clients:
+					if voice.is_connected():
+						voice.disconnect()
+				
+				# Logs the bot out
+				await client.logout()
+
+				# Closes the client connection to allow for perfect shutdown
+				await client.close()
+
 			elif msg[0] == 'testing':
 				pass
 
@@ -75,8 +106,10 @@ async def on_message(message):
 		if config.Trusted_Permissions is None and str(message.author.top_role) in config.Role_Permissions:
 			# Delete all of the bot's previous outputs
 			if msg[0] == 'delete':
+				# Just some holders
 				counter = 0
 				msgs = []
+
 				await client.send_message(message.channel, 'Calculating messages...')
 				async for log in client.logs_from(message.channel):
 					if str(log.author.id) == client.user.id or log.content.startswith(config.Command_Prefix):
@@ -89,11 +122,57 @@ async def on_message(message):
 					await client.delete_messages(msgs)
 
 				await client.send_message(message.channel, 'You have delete {} of my messages...  Well make that {} messages' .format(counter, counter+1))
-				time.sleep(5)
+				await asyncio.sleep(5)
 
 				async for log in client.logs_from(message.channel):
 					if str(log.author.id) == client.user.id:
 						await client.delete_message(log)
+
+			# User enters a new playlist file for the bot to pull from (if empty it will not use an autoplaylist)
+			elif msg[0] == 'playlist':
+				temp = message.content
+				playlistName = temp.split(' ')
+
+				config.CoolDownQueue.clear()
+
+				if len(playlistName) < 2:
+					await client.send_message(message.channel, 'You have turned off AcaBot\'s autoplaylist.')
+
+					if config.AutoplaylistName is not None:
+						# Clears the autoplaylist
+						config.Autoplaylist.clear()
+
+				elif '.txt' in playlistName[1]:
+					await client.send_message(message.channel, 'You have changed AcaBot\'s playlist to {}' .format(playlistName[1]))
+
+					# Set the autoplaylist name
+					config.AutoplaylistName = playlistName[1]
+
+					if os.path.exists('playlists/' + config.AutoplaylistName):
+						with open('playlists/' + config.AutoplaylistName) as f:
+							config.Autoplaylist = f.read().split()
+
+					else:
+						# Create the file if it doesn't exist already
+						f = open('playlists/' + playlistName[1], "w+")
+						config.Autoplaylist = f.read().split()
+						f.close()
+
+				elif '.txt' not in playlistName[1]:
+					await client.send_message(message.channel, 'You have changed AcaBot\'s playlist to {}.txt' .format(playlistName[1]))
+
+					# Set the autoplaylist name
+					config.AutoplaylistName = playlistName[1]
+
+					if os.path.exists('playlists/' + config.AutoplaylistName + '.txt'):
+						with open('playlists/' + config.AutoplaylistName + '.txt') as f:
+							config.Autoplaylist = f.read().split()
+
+					else:
+						# Create the file if it doesn't exist already
+						f = open('playlists/' + playlistName[1] + '.txt', "w+")
+						config.Autoplaylist = f.read().split()
+						f.close()
 
 			# Toggles shuffle for the queue
 			elif msg[0] == 'shuffle':
@@ -195,12 +274,11 @@ async def on_message(message):
 					'~ - means that functionality has not yet been implemented as of yet. \n\n'
 
 					'OWNER SPECIFIC COMMANDS \n'
-					'	{0}playlist <name of a .txt file> - This changed the autoplaylist to a user defined list (if no .txt file is specified the autoplaylist will be NONE). \n'
-					'	~{0}restart - restarts AcaBot (Won\'t be implemented for a while). \n'
 					'	{0}shutdown - Kills AcaBot, RIP. \n\n'
 
 					'TRUSTED USER COMMANDS \n'
 					'	{0}delete - Deletes the last 100 commands for AcaBot and AcaBot message, can use multiple times to delete them all. \n'
+					'	{0}playlist <name of a .txt file> - This changed the autoplaylist to a user defined list (if no .txt file is specified the autoplaylist will be NONE). \n'
 					'	{0}shuffle - Determines whether the queue should be shuffles (Toggled). \n'
 					'	{0}store - Determines whether songs that users play should be added to the current autoplaylist (Toggled). \n'
 					'	{0}summon - Summons the bot to the caller\'s voice channel'
@@ -252,10 +330,17 @@ async def on_message(message):
 					config.Userplaylist.append(url[1])
 
 					if url[1] not in config.Autoplaylist:
-						# Open the Autoplaylist file and put the new url in
-						with open('playlists/{}.txt' .format(config.AutoplaylistName), 'a') as f:
-							f.write('{}\n' .format(url[1]))
-						f.close()
+						if '.txt' in config.AutoplaylistName:
+							# Open the Autoplaylist file and put the new url in
+							with open('playlists/{}' .format(config.AutoplaylistName), 'a') as f:
+								f.write('{}\n' .format(url[1]))
+							f.close()
+
+						elif '.txt' not in config.AutoplaylistName:
+							# Open the Autoplaylist file and put the new url in
+							with open('playlists/{}.txt' .format(config.AutoplaylistName), 'a') as f:
+								f.write('{}\n' .format(url[1]))
+							f.close()
 
 						# Queue up the songs
 						config.Autoplaylist.append(url[1])
@@ -296,8 +381,8 @@ async def summon(message):
 		await MusicPlayer()
 		print('AcaBot has joined the channel "{}"!' .format(summoned_channel))
 	else:
-		for key in client.voice_clients:
-			await key.move_to(summoned_channel)
+		for voice in client.voice_clients:
+			await voice.move_to(summoned_channel)
 			print('AcaBot has moved to the channel "{}"!' .format(summoned_channel))
 	return True
 
@@ -314,23 +399,49 @@ async def MusicPlayer():
 
 			# Creates a stream for music playing
 			player = await voice.create_ytdl_player(url)
-			config.Userplaylist.remove(url)
 			player.volume = config.Volume
+
+			if len(config.Autoplaylist) > 1:
+				# Start creating a cool down queue so no repeats happen
+				config.CoolDownQueue.append(url)
+
+			# Remove the song from the user playlist
+			config.Userplaylist.remove(url)
+
+			await asyncio.sleep(3)
 
 			# Begins playing music through voice chat
 			player.start()
 		else:
+			
 			# Creates a stream for music playing
 			player = await voice.create_ytdl_player(config.Userplaylist[0])
-			config.Userplaylist.pop(0)
 			player.volume = config.Volume
+
+			if len(config.Autoplaylist) > 1:
+				# Start creating a cool down queue so no repeats happen
+				config.CoolDownQueue.append(config.Userplaylist[0])
+
+			# Remove the song from the user playlist
+			config.Userplaylist.pop(0)
+
+			await asyncio.sleep(3)
 
 			# Begins playing music through voice chat
 			player.start()
 	elif config.Autoplaylist:
+		# Song url that will be played
+		song = random.choice(config.Autoplaylist)
+
 		# Creates a stream for music playing
-		player = await voice.create_ytdl_player(random.choice(config.Autoplaylist))
+		player = await voice.create_ytdl_player(song)
 		player.volume = config.Volume
+
+		if len(config.Autoplaylist) > 1:
+			# Start creating a cool down queue so no repeats happen
+			config.CoolDownQueue.append(song)
+
+		await asyncio.sleep(3)
 
 		# Begins playing music through voice chat
 		player.start()
@@ -338,37 +449,102 @@ async def MusicPlayer():
 	# Continuous Loop that will continuously check if there is music playing.
 	# Wait if there is music playing, queue a song otherwise.
 	while True:
-		if player.is_playing():
+		if config.Autoplaylist is None or not config.Autoplaylist or player.is_playing():
 			await asyncio.sleep(2)
 		else:
-			player.stop()
+			if player.is_done():
+				player.stop()
 
 			if config.Userplaylist:
 				if config.Shuffle:
+					# Song url that will be played
 					url = random.choice(config.Userplaylist)
 
 					# Creates a stream for music playing
 					player = await voice.create_ytdl_player(url)
+					player.volume = config.Volume
+
+					if len(config.CoolDownQueue) >= floor(len(config.Autoplaylist) * config.CoolDownQueueSize):
+						if len(config.CoolDownQueue) > 0:
+							# Remove the first song in the Cool Down Queue
+							config.CoolDownQueue.pop(0)
+						
+						if len(config.Autoplaylist) > 1:
+							# Add to the cool down queue so no repeats happen
+							config.CoolDownQueue.append(url)
+
+					elif len(config.CoolDownQueue) < floor(len(config.Autoplaylist) * config.CoolDownQueueSize):
+						# Add to the cool down queue so no repeats happen
+						config.CoolDownQueue.append(url)
+
+					# Remove the song from the user playlist
 					config.Userplaylist.remove(url)
-					player.volume = config.Volume
+
+					await asyncio.sleep(3)
 
 					# Begins playing music through voice chat
 					player.start()
+
 				else:
+					# Song url that will be played
+					song = config.Userplaylist[0]
+
 					# Creates a stream for music playing
-					player = await voice.create_ytdl_player(config.Userplaylist[0])
-					config.Userplaylist.pop(0)
+					player = await voice.create_ytdl_player(song)
 					player.volume = config.Volume
+				
+					if len(config.CoolDownQueue) >= floor(len(config.Autoplaylist) * config.CoolDownQueueSize):
+						if len(config.CoolDownQueue) > 0:
+							# Remove the first song in the Cool Down Queue
+							config.CoolDownQueue.pop(0)
+						
+						if len(config.Autoplaylist) > 1:
+							# Add to the cool down queue so no repeats happen
+							config.CoolDownQueue.append(song)
+
+					elif len(config.CoolDownQueue) < floor(len(config.Autoplaylist) * config.CoolDownQueueSize):
+						# Add to the cool down queue so no repeats happen
+						config.CoolDownQueue.append(song)
+
+					# Remove the song from the user playlist
+					config.Userplaylist.pop(0)
+
+					await asyncio.sleep(3)
 
 					# Begins playing music through voice chat
 					player.start()
+
 			elif config.Autoplaylist:
+				# Song url that will be played
+				song = random.choice(config.Autoplaylist)
+
+				while song in config.CoolDownQueue:
+					song = random.choice(config.Autoplaylist)
+
 				# Creates a stream for music playing
-				player = await voice.create_ytdl_player(random.choice(config.Autoplaylist))
+				player = await voice.create_ytdl_player(song)
 				player.volume = config.Volume
+
+				if len(config.CoolDownQueue) >= floor(len(config.Autoplaylist) * config.CoolDownQueueSize):
+					if len(config.CoolDownQueue) > 0:
+						# Remove the first song in the Cool Down Queue
+						config.CoolDownQueue.pop(0)
+
+					if len(config.Autoplaylist) > 1:
+						# Add to the cool down queue so no repeats happen
+						config.CoolDownQueue.append(song)
+
+				elif len(config.CoolDownQueue) < floor(len(config.Autoplaylist) * config.CoolDownQueueSize):
+					if len(config.Autoplaylist) > 1:
+						# Add to the cool down queue so no repeats happen
+						config.CoolDownQueue.append(song)
+
+				await asyncio.sleep(3)
 
 				# Begins playing music through voice chat
 				player.start()
+
+			print(config.CoolDownQueue)
 
 
 client.run(config.Token)
