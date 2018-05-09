@@ -400,28 +400,30 @@ async def on_message(message):
 
 		# User enters a youtube link to be played ADD STORE HERE
 		elif msg[0].startswith('p'):
-			url = message.content.split(' ')
-			if 'www.youtube.com/watch' in msg[1]:
-				if config.Store:
-					config.Userplaylist.append(url[1])
+			urls = message.content.split(' ')
 
-					if url[1] not in config.Autoplaylist:
-						if '.txt' in config.AutoplaylistName:
-							# Open the Autoplaylist file and put the new url in
-							with open('playlists/{}' .format(config.AutoplaylistName), 'a') as f:
-								f.write('{}\n' .format(url[1]))
-							f.close()
+			for url in urls:
+				if 'www.youtube.com/watch' in url:
+					if config.Store:
+						config.Userplaylist.append(url)
 
-						elif '.txt' not in config.AutoplaylistName:
-							# Open the Autoplaylist file and put the new url in
-							with open('playlists/{}.txt' .format(config.AutoplaylistName), 'a') as f:
-								f.write('{}\n' .format(url[1]))
-							f.close()
+						if url not in config.Autoplaylist:
+							if '.txt' in config.AutoplaylistName:
+								# Open the Autoplaylist file and put the new url in
+								with open('playlists/{}' .format(config.AutoplaylistName), 'a') as f:
+									f.write('{}\n' .format(url))
+								f.close()
 
-						# Queue up the songs
-						config.Autoplaylist.append(url[1])
-				else:
-					config.Userplaylist.append(url[1])
+							elif '.txt' not in config.AutoplaylistName:
+								# Open the Autoplaylist file and put the new url in
+								with open('playlists/{}.txt' .format(config.AutoplaylistName), 'a') as f:
+									f.write('{}\n' .format(url))
+								f.close()
+
+							# Queue up the songs
+							config.Autoplaylist.append(url)
+					else:
+						config.Userplaylist.append(url)
 
 		# User enters a new playlist file for the bot to pull from
 		elif msg[0].startswith('roll'):
