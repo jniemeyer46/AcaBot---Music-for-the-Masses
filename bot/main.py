@@ -65,7 +65,7 @@ async def on_message(message):
 			# Shuts down the bot (Not the correct way to do this, need to look into it still...  Technically works though atm)
 			if msg[0] == 'shutdown':
 				await AcaBot.shutdown(client, config, message)
-				
+
 			elif msg[0] == 'testing':
 				await AcaBot.shutdown(client, config, message)
 
@@ -190,22 +190,22 @@ async def on_message(message):
 
 					'TRUSTED USER COMMANDS \n'
 					'	{0}delete - Deletes the last 100 commands for AcaBot and AcaBot message, can use multiple times to delete them all. \n'
-					'	{0}deletenp - Deletes the song that is currently playing from the autoplaylist. \n'
-					'	{0}playlist <name of a .txt file> - This changed the autoplaylist to a user defined list (if no .txt file is specified the autoplaylist will be NONE). \n'
+					'	~{0}deletenp - Deletes the song that is currently playing from the autoplaylist. \n'
+					'	~{0}playlist <name of a .txt file> - This changed the autoplaylist to a user defined list (if no .txt file is specified the autoplaylist will be NONE). \n'
 					'	{0}shuffle - Determines whether the queue should be shuffles (Toggled). \n'
 					'	{0}store - Determines whether songs that users play should be added to the current autoplaylist (Toggled). \n'
 					'	{0}summon - Summons the bot to the caller\'s voice channel'
-					'	{0}volume (or !v) - Changes the volume level for the entire server. \n\n'
+					'	~{0}volume (or !v) - Changes the volume level for the entire server. \n\n'
 
 					'COMMANDS FOR EVERYONE \n'
 					'	{0}help - Outputs commands for AcaBot. \n'
-					'	{0}np - Outputs information on the song that is currently playing. \n'
+					'	~{0}np - Outputs information on the song that is currently playing. \n'
 					'	~{0}pause - Pauses the currently playing song. \n'
-					'	{0}queue (or !q) - Outputs the list of songs that users have asked to be played (in order). \n'
+					'	~{0}queue (or \\q) - Outputs the list of songs that users have asked to be played (in order). \n'
 					'	~{0}quiet - Mutes AcaBot for a single user (if owner uses the command it mutes the bot for the entire server). \n'
-					'	{0}skip (or !s) - Skips the currently playing song. \n'
-					'	{0}play <YOUTUBE URL> (or !p) - This will queue a song to be played (will be sentence recognition later). \n'
-					'	{0}roll <<number of dice>d<type of dice>> - Will roll a specified dice for the user (example: !roll 5d20 (rolls 5 dice that are 20 sided)). \n' .format(config.Command_Prefix)
+					'	~{0}skip (or !s) - Skips the currently playing song. \n'
+					'	~{0}play <YOUTUBE URL> (or !p) - This will queue a song to be played (will be sentence recognition later). \n'
+					'	~{0}roll <<number of dice>d<type of dice>> - Will roll a specified dice for the user (example: !roll 5d20 (rolls 5 dice that are 20 sided)). \n' .format(config.Command_Prefix)
 				)
 
 		# Outputs information about the song that is currently playing
