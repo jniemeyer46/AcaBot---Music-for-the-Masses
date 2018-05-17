@@ -25,7 +25,7 @@ class MusicBot:
 
 	# Disconnect from the current voice channel
 	async def disconnect(self):
-		if self.__voice.is_connected():
+		if self.__voice is not None and self.__voice.is_connected():
 			await self.__voice.disconnect()
 
 	'''-------------FUNCTIONALITY-------------'''

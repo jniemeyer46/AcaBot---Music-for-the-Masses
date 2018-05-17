@@ -25,15 +25,9 @@ config = Config(config_file)
 
 
 
-
-
-
 # CHECK IF THIS IS EVEN NEEDED JOHN
 if not discord.opus.is_loaded():
 	discord.opus.load_opus('opus.dll')
-
-
-
 
 
 
@@ -117,7 +111,7 @@ async def on_message(message):
 
 	# Makes sure that only TRUSTED users can use these commands
 	if msg[0] in config.TrustedCommands:
-		if config.Trusted_Permissions is None and str(message.author.top_role) in config.Role_Permissions:
+		if ((config.Role_Permissions is not None and config.Trusted_Permissions is None) and str(message.author.top_role) in config.Role_Permissions) or (config.Trusted_Permissions is not None and str(message.author.id) in config.Trusted_Permissions):
 			# Delete all of the bot's previous outputs
 			if msg[0] == 'delete':
 				# Just some holders
@@ -156,6 +150,9 @@ async def on_message(message):
 
 					for song in config.Autoplaylist:
 						f.write(song + '\n')
+
+			elif msg[0] == 'disconnect':
+				await AcaBot.disconnect()
 
 			# User enters a new playlist file for the bot to pull from (if empty it will not use an autoplaylist)
 			elif msg[0] == 'playlist':
@@ -226,124 +223,6 @@ async def on_message(message):
 				await AcaBot.summonToVoice(message)
 
 			# CHange the volume level of the music
-			elif msg[0].startswith('v'):
-				if len(msg) > 1:
-					if msg[1].isdigit():
-						player.volume = int(msg[1]) / 100
-						config.Volume = int(msg[1]) / 100
-						await client.send_message(message.channel, 'The volume is now set to {}' .format(msg[1]))
-				else:
-					await client.send_message(message.channel, 'The current volume is {}' .format(config.Volume * 100))
-
-		elif config.Trusted_Permissions is not None and str(message.author.id) in config.Trusted_Permissions:
-			# Delete all of the bot's previous outputs
-			if msg[0] == 'delete':
-				counter = 0
-				msgs = []
-				await client.send_message(message.channel, 'Calculating messages...')
-				async for log in client.logs_from(message.channel):
-					if str(log.author.id) == client.user.id or log.content.startswith(config.Command_Prefix):
-						msgs.append(log)
-						counter += 1
-
-				if len(msgs) < 2:
-					await client.delete_message(msgs[0])
-				elif len(msgs) >= 2 and len(msgs) <= 100:
-					await client.delete_messages(msgs)
-
-				await client.send_message(message.channel, 'You have delete {} of my messages...  Well make that {} messages' .format(counter, counter+1))
-				time.sleep(5)
-
-				async for log in client.logs_from(message.channel):
-					if str(log.author.id) == client.user.id:
-						await client.delete_message(log)
-
-			elif msg[0] == 'deletenp':
-				await client.send_message(message.channel, 'You have delete the song {0} with the url {1}... Please queue it again if you would like it in the playlist again.' .format(player.title, player.url))
-				config.Autoplaylist.remove(player.url)
-
-				if '.txt' in config.AutoplaylistName:
-					f = open('playlists/' + config.AutoplaylistName, "w")
-
-					for song in config.Autoplaylist:
-						f.write(song + '\n')
-				elif '.txt' not in config.AutoplaylistName:
-					f = open('playlists/' + config.AutoplaylistName + '.txt', "w")
-
-					for song in config.Autoplaylist:
-						f.write(song + '\n')
-
-			# User enters a new playlist file for the bot to pull from (if empty it will not use an autoplaylist)
-			elif msg[0] == 'playlist':
-				temp = message.content
-				playlistName = temp.split(' ')
-
-				config.CoolDownQueue.clear()
-
-				if len(playlistName) < 2:
-					await client.send_message(message.channel, 'You have turned off AcaBot\'s autoplaylist.')
-
-					if config.AutoplaylistName is not None:
-						# Clears the autoplaylist
-						config.Autoplaylist.clear()
-
-				elif '.txt' in playlistName[1]:
-					await client.send_message(message.channel, 'You have changed AcaBot\'s playlist to {}' .format(playlistName[1]))
-
-					# Set the autoplaylist name
-					config.AutoplaylistName = playlistName[1]
-
-					if os.path.exists('playlists/' + config.AutoplaylistName):
-						with open('playlists/' + config.AutoplaylistName) as f:
-							config.Autoplaylist = f.read().split()
-
-					else:
-						# Create the file if it doesn't exist already
-						f = open('playlists/' + playlistName[1], "w+")
-						config.Autoplaylist = f.read().split()
-						f.close()
-
-				elif '.txt' not in playlistName[1]:
-					await client.send_message(message.channel, 'You have changed AcaBot\'s playlist to {}.txt' .format(playlistName[1]))
-
-					# Set the autoplaylist name
-					config.AutoplaylistName = playlistName[1]
-
-					if os.path.exists('playlists/' + config.AutoplaylistName + '.txt'):
-						with open('playlists/' + config.AutoplaylistName + '.txt') as f:
-							config.Autoplaylist = f.read().split()
-
-					else:
-						# Create the file if it doesn't exist already
-						f = open('playlists/' + playlistName[1] + '.txt', "w+")
-						config.Autoplaylist = f.read().split()
-						f.close()
-
-			# Toggles shuffle for the queue
-			elif msg[0] == 'shuffle':
-				if config.Shuffle:
-					config.Shuffle = False
-					await client.send_message(message.channel, 'The queued songs will not be shuffled.')
-				elif not config.Shuffle:
-					config.Shuffle = True
-					await client.send_message(message.channel, 'The queued songs will be shuffled.')
-
-			# Toggles storing the youtube videos into the current autoplaylist (should not add duplicates)
-			elif msg[0] == 'store':
-				if config.Store:
-					config.Store = False
-					await client.send_message(message.channel, 'The queued songs will no longer be added to the autoplaylist.')
-				elif not config.Store:
-					config.Store = True
-					await client.send_message(message.channel, 'The queued songs will now be added to the autoplaylist.')
-
-			# Summons the bot to the the caller's voice channel
-			elif msg[0] == 'summon':
-				await summon(message)
-				if player is not None:
-					await MusicPlayer()
-
-			# Sets the volume of the bot for the entire voice chat
 			elif msg[0].startswith('v'):
 				if len(msg) > 1:
 					if msg[1].isdigit():
