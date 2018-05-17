@@ -37,7 +37,7 @@ if not discord.opus.is_loaded():
 
 
 
-AcaBot = MusicBot(config.Volume)
+AcaBot = MusicBot(client, config.Volume)
 
 # Variable Holders
 voice = None
@@ -110,7 +110,7 @@ async def on_message(message):
 				# Closes the client connection to allow for perfect shutdown
 				await client.close()
 			elif msg[0] == 'testing':
-				await AcaBot.summonToVoice(client, message)
+				await AcaBot.disconnect()
 
 
 	'''------TRUSTED COMMANDS------'''
@@ -223,7 +223,7 @@ async def on_message(message):
 
 			# Summons the bot to the the caller's voice channel
 			elif msg[0] == 'summon':
-				await AcaBot.summonToVoice(client, message)
+				await AcaBot.summonToVoice(message)
 
 			# CHange the volume level of the music
 			elif msg[0].startswith('v'):

@@ -1,14 +1,36 @@
 class MusicBot:
+	# Holds the client
+	__client = None
 	# Holds the youtube data information
-	player = None
+	__player = None
 	# Holds the current voice session information
-	voice = None
+	__voice = None
 
-	def __init__(self, volume):
-		self.volume = volume
+	def __init__(self, client, volume):
+		self.__volume = volume
+		self.__client = client
 
 
-	async def summonToVoice(self, client, message):
+	'''------------- SETTERS AND GETTERS-------------'''
+
+	# Set a new volume level
+	async def setVolume(self, newVolume):
+		self.__volume = newVolume
+
+
+	# Setup the voice variable
+	async def setVoice(self, channel):
+		self.__voice = await self.__client.join_voice_channel(channel)
+
+
+	# Disconnect from the current voice channel
+	async def disconnect(self):
+		if self.__voice.is_connected():
+			await self.__voice.disconnect()
+
+	'''-------------FUNCTIONALITY-------------'''
+	# Attempts to join a voice channel
+	async def summonToVoice(self, message):
 		summoned_channel = message.author.voice.voice_channel
 
 		# Checks to see if the summoning user is actually in a voice channel
@@ -17,26 +39,22 @@ class MusicBot:
 			return False
 
 		# List the voice channels that AcaBot is currently in
-		voiceChannels = client.voice_clients
+		voiceChannels = self.__client.voice_clients
 
 		# Place AcaBot in the appropriate channel in terms of the summoner
 		if not voiceChannels:
-			voice = await client.join_voice_channel(summoned_channel)
+			await self.setVoice(summoned_channel)
 
 			# Announces AcaBot's arrival
-			await client.send_message(message.channel, 'AcaBot has joined the voice channel "{}", get ready for some music!' .format(summoned_channel))
+			await self.__client.send_message(message.channel, 'AcaBot has joined the voice channel "{}", get ready for some music!' .format(summoned_channel))
 		else:
-			for voice in client.voice_clients:
-				await voice.move_to(summoned_channel)
+			await self.__voice.move_to(summoned_channel)
 
-				# Announces AcaBot's arrival
-				await client.send_message(message.channel, 'AcaBot has moved to the voice channel "{}", get ready for some music!' .format(summoned_channel))
+			# Announces AcaBot's arrival
+			await self.__client.send_message(message.channel, 'AcaBot has moved to the voice channel "{}", get ready for some music!' .format(summoned_channel))
 
 		return True
 
-
-	# Get Volume
-	# Set Volume
 	# Get Song
 	# Play
 	# Pause
