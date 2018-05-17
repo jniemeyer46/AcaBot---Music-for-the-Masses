@@ -204,7 +204,7 @@ async def on_message(message):
 
 			# Summons the bot to the the caller's voice channel
 			elif msg[0] == 'summon':
-				await AcaBot.summonToVoice(message)
+				await AcaBot.summonToVoice(client, config, message)
 
 			# CHange the volume level of the music
 			elif msg[0].startswith('v'):
