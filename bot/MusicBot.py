@@ -7,8 +7,16 @@ class MusicBot:
 	def __init__(self, volume):
 		self.volume = volume
 
+
+	# Sets voice to the proper channel
+	async def setupVoice(self, message):
+		summoned_channel = message.author.voice.voice_channel
+
+		print(summoned_channel)
+
+
 	async def summonToVoice(self, message):
-		print('hello')
+		pass
 
 
 	# Get Volume

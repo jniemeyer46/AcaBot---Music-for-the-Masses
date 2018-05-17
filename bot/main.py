@@ -97,7 +97,7 @@ async def on_message(message):
 				# Closes the client connection to allow for perfect shutdown
 				await client.close()
 			elif msg[0] == 'testing':
-				await test.summonToVoice(message)
+				await test.setupVoice(message)
 
 
 	'''------TRUSTED COMMANDS------'''
