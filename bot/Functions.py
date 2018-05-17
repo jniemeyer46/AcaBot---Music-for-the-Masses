@@ -1,1 +1,25 @@
-from main import client
+import asyncio
+
+async def cleanChat(client, config, message):
+	# Holders
+	counter = 0
+	msgs = []
+
+	await client.send_message(message.channel, 'Calculating number of messages to delete...')
+
+	async for log in client.logs_from(message.channel):
+		if str(log.author.id) == client.user.id or log.content.startswith(config.Command_Prefix):
+			msgs.append(log)
+			counter += 1
+
+	if len(msgs) < 2:
+		await client.delete_message(msgs[0])
+	elif len(msgs) <= 100:
+		await client.delete_messages(msgs)
+
+	await client.send_message(message.channel, 'You have delete {} messages...  Well make that {} messages' .format(counter, counter+1))
+	await asyncio.sleep(3)
+
+	async for log in client.logs_from(message.channel):
+		if str(log.author.id) == client.user.id:
+			await client.delete_message(log)

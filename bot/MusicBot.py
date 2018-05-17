@@ -1,3 +1,5 @@
+import functions
+
 class MusicBot:
 	# Holds the client
 	__client = None
@@ -28,6 +30,11 @@ class MusicBot:
 	async def disconnect(self):
 		if self.__voice is not None and self.__voice.is_connected():
 			await self.__voice.disconnect()
+
+
+	# Shutdown the bot
+	async def shutdown(self):
+		pass
 
 
 	# Attempts to join a voice channel

@@ -1,3 +1,4 @@
+# General Imports
 import sys
 import time
 import random
@@ -6,14 +7,17 @@ import asyncio
 import itertools
 import youtube_dl
 import os.path
-from MusicBot import MusicBot
 from discord.ext import commands
 from math import floor
 
+# Bot Files
+import functions
+from MusicBot import MusicBot
 #from config import Config, DefaultConfigs
 from personal_config import Config, DefaultConfigs
 
-'''----------------------------------------------------------------------------------'''
+
+
 
 # Stores the file that has the user input settings
 config_file = DefaultConfigs.Settings
@@ -104,7 +108,7 @@ async def on_message(message):
 				# Closes the client connection to allow for perfect shutdown
 				await client.close()
 			elif msg[0] == 'testing':
-				await AcaBot.disconnect()
+				await functions.cleanChat(client, config, message)
 
 
 	'''------TRUSTED COMMANDS------'''
@@ -114,27 +118,7 @@ async def on_message(message):
 		if ((config.Role_Permissions is not None and config.Trusted_Permissions is None) and str(message.author.top_role) in config.Role_Permissions) or (config.Trusted_Permissions is not None and str(message.author.id) in config.Trusted_Permissions):
 			# Delete all of the bot's previous outputs
 			if msg[0] == 'delete':
-				# Just some holders
-				counter = 0
-				msgs = []
-
-				await client.send_message(message.channel, 'Calculating messages...')
-				async for log in client.logs_from(message.channel):
-					if str(log.author.id) == client.user.id or log.content.startswith(config.Command_Prefix):
-						msgs.append(log)
-						counter += 1
-
-				if len(msgs) < 2:
-					await client.delete_message(msgs[0])
-				elif len(msgs) >= 2 and len(msgs) <= 100:
-					await client.delete_messages(msgs)
-
-				await client.send_message(message.channel, 'You have delete {} of my messages...  Well make that {} messages' .format(counter, counter+1))
-				await asyncio.sleep(5)
-
-				async for log in client.logs_from(message.channel):
-					if str(log.author.id) == client.user.id:
-						await client.delete_message(log)
+				await functions.cleanChat(client, config, message)
 
 			elif msg[0] == 'deletenp':
 				await client.send_message(message.channel, 'You have delete the song {0} with the url {1}... Please queue it again if you would like it in the playlist again.' .format(player.title, player.url))
