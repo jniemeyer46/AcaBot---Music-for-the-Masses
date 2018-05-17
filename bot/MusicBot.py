@@ -1,4 +1,8 @@
 import functions
+import os.path
+import random
+import youtube_dl
+from math import floor
 
 class MusicBot:
 	# Holds the youtube data information
@@ -11,6 +15,10 @@ class MusicBot:
 
 
 	'''------------- SETTERS AND GETTERS-------------'''
+	# Set the player variable
+	async def setPlayer(self, song):
+		self.__player = await self.__voice.create_ytdl_player(song)
+
 
 	# Set a new volume level
 	async def setVolume(self, config, newVolume):
@@ -29,7 +37,7 @@ class MusicBot:
 			await self.__voice.disconnect()
 
 
-	async def MusicPlayer(self):
+	async def MusicPlayer(self, client, config):
 		pass
 
 
@@ -69,7 +77,7 @@ class MusicBot:
 			await self.setVoice(client, summoned_channel)
 
 			# Start the music
-			await self.MusicPlayer()
+			await self.MusicPlayer(client, config)
 
 			# Announces AcaBot's arrival
 			await client.send_message(message.channel, 'AcaBot has joined the voice channel "{}", get ready for some music!' .format(summoned_channel))
@@ -78,7 +86,7 @@ class MusicBot:
 			await self.__voice.move_to(summoned_channel)
 
 			# Start the music
-			await self.MusicPlayer()
+			await self.MusicPlayer(client, config)
 
 			# Announces AcaBot's arrival
 			await client.send_message(message.channel, 'AcaBot has moved to the voice channel "{}", get ready for some music!' .format(summoned_channel))
@@ -98,12 +106,14 @@ class MusicBot:
 	# Skip
 	
 '''
+# Sets the player
+	self.__player = await self.__voice.create_ytdl_player("ytsearch:hello")
+	self.__player.volume = self.__volume
+
+	self.__player.start()
 
 # Attempts to constantly play music (needs reworked)
 async def MusicPlayer():
-	global voice
-	global player
-
 	# Initial music video queued here
 	if config.Userplaylist:
 		if config.Shuffle:

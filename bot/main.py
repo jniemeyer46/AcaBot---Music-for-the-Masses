@@ -1,14 +1,9 @@
 # General Imports
-import sys
-import time
 import random
 import discord
 import asyncio
 import itertools
-import youtube_dl
-import os.path
 from discord.ext import commands
-from math import floor
 
 # Bot Files
 import functions
@@ -33,13 +28,10 @@ if not discord.opus.is_loaded():
 	discord.opus.load_opus('opus.dll')
 
 
+
 ''' BOT STARTS HERE '''
 
 AcaBot = MusicBot(client, config.Volume)
-
-# Variable Holders
-voice = None
-player = None
 
 @client.event
 async def on_ready():
@@ -49,7 +41,6 @@ async def on_ready():
 @client.event
 async def on_message(message):
 	msg = message.content.lower()
-	global player
 
 	# Determine whether the message was a command for the bot, parse out the Command_Prefix
 	if msg.startswith(config.Command_Prefix):
@@ -67,7 +58,7 @@ async def on_message(message):
 				await AcaBot.shutdown(client, config, message)
 
 			elif msg[0] == 'testing':
-				await AcaBot.shutdown(client, config, message)
+				await AcaBot.MusicPlayer(client, config)
 
 
 	'''------TRUSTED COMMANDS------'''
