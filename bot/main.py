@@ -16,12 +16,11 @@ from MusicBot import MusicBot
 #from config import Config, DefaultConfigs
 from personal_config import Config, DefaultConfigs
 
-
-
-
 # Stores the file that has the user input settings
 config_file = DefaultConfigs.Settings
 
+
+''' SETUP FOR THE ENTIRE BOT '''
 # Discord client connection
 client = discord.Client()
 # Holds all of AcaBot's configurations
@@ -34,6 +33,7 @@ if not discord.opus.is_loaded():
 	discord.opus.load_opus('opus.dll')
 
 
+''' BOT STARTS HERE '''
 
 AcaBot = MusicBot(client, config.Volume)
 
