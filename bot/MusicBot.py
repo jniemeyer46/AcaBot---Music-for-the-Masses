@@ -23,12 +23,13 @@ class MusicBot:
 		self.__voice = await self.__client.join_voice_channel(channel)
 
 
+	'''-------------FUNCTIONALITY-------------'''
 	# Disconnect from the current voice channel
 	async def disconnect(self):
 		if self.__voice is not None and self.__voice.is_connected():
 			await self.__voice.disconnect()
 
-	'''-------------FUNCTIONALITY-------------'''
+
 	# Attempts to join a voice channel
 	async def summonToVoice(self, message):
 		summoned_channel = message.author.voice.voice_channel
