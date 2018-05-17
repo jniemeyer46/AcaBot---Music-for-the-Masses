@@ -8,15 +8,31 @@ class MusicBot:
 		self.volume = volume
 
 
-	# Sets voice to the proper channel
-	async def setupVoice(self, message):
+	async def summonToVoice(self, client, message):
 		summoned_channel = message.author.voice.voice_channel
 
-		print(summoned_channel)
+		# Checks to see if the summoning user is actually in a voice channel
+		if summoned_channel is None:
+			await client.send_message(message.channel, '{}, you are not currently in a voice channel' .format(message.author.nick))
+			return False
 
+		# List the voice channels that AcaBot is currently in
+		voiceChannels = client.voice_clients
 
-	async def summonToVoice(self, message):
-		pass
+		# Place AcaBot in the appropriate channel in terms of the summoner
+		if not voiceChannels:
+			voice = await client.join_voice_channel(summoned_channel)
+
+			# Announces AcaBot's arrival
+			await client.send_message(message.channel, 'AcaBot has joined the voice channel "{}", get ready for some music!' .format(summoned_channel))
+		else:
+			for voice in client.voice_clients:
+				await voice.move_to(summoned_channel)
+
+				# Announces AcaBot's arrival
+				await client.send_message(message.channel, 'AcaBot has moved to the voice channel "{}", get ready for some music!' .format(summoned_channel))
+
+		return True
 
 
 	# Get Volume
@@ -24,7 +40,6 @@ class MusicBot:
 	# Get Song
 	# Play
 	# Pause
-	# Summon
 	# Get Playlist
 	# Set Playlist
 	# Shutdown

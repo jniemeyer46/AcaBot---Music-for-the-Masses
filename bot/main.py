@@ -13,6 +13,8 @@ from math import floor
 #from config import Config, DefaultConfigs
 from personal_config import Config, DefaultConfigs
 
+'''----------------------------------------------------------------------------------'''
+
 # Stores the file that has the user input settings
 config_file = DefaultConfigs.Settings
 
@@ -21,10 +23,21 @@ client = discord.Client()
 # Holds all of AcaBot's configurations
 config = Config(config_file)
 
+
+
+
+
+
+# CHECK IF THIS IS EVEN NEEDED JOHN
 if not discord.opus.is_loaded():
 	discord.opus.load_opus('opus.dll')
 
-test = MusicBot(config.Volume)
+
+
+
+
+
+AcaBot = MusicBot(config.Volume)
 
 # Variable Holders
 voice = None
@@ -97,7 +110,7 @@ async def on_message(message):
 				# Closes the client connection to allow for perfect shutdown
 				await client.close()
 			elif msg[0] == 'testing':
-				await test.setupVoice(message)
+				await AcaBot.summonToVoice(client, message)
 
 
 	'''------TRUSTED COMMANDS------'''
@@ -210,7 +223,7 @@ async def on_message(message):
 
 			# Summons the bot to the the caller's voice channel
 			elif msg[0] == 'summon':
-				await summon(message)
+				await AcaBot.summonToVoice(client, message)
 
 			# CHange the volume level of the music
 			elif msg[0].startswith('v'):
