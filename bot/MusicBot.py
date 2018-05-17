@@ -31,7 +31,20 @@ class MusicBot:
 
 	# Shutdown the bot
 	async def shutdown(self, client, config, message):
-		await functions.cleanChat(client, config, message)
+		await functions.cleanChat(client, config, message, 1)
+
+		# Stop the music
+		if self.__player is not None and player.is_playing():
+			self.__player.stop()
+
+		# Disconnect from voice if needed
+		await self.disconnect()
+
+		# Log AcaBot out of Discord
+		await client.logout()
+
+		# Finally close the client connection
+		await client.close()
 
 
 	# Attempts to join a voice channel

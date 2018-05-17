@@ -64,51 +64,9 @@ async def on_message(message):
 		if str(message.author.id) == config.Owner_ID:
 			# Shuts down the bot (Not the correct way to do this, need to look into it still...  Technically works though atm)
 			if msg[0] == 'shutdown':
-				# Just some holders
-				counter = 0
-				msgs = []
-
-				# Just a friends message
-				await client.send_message(message.channel, 'Cleaning the chat before I leave...')
-
-				# Create the list to be deleted
-				async for log in client.logs_from(message.channel):
-					if str(log.author.id) == client.user.id or log.content.startswith(config.Command_Prefix):
-						msgs.append(log)
-						counter += 1
-
-				# Time to delete the old commands
-				if len(msgs) < 2:
-					await client.delete_message(msgs[0])
-				elif len(msgs) >= 2 and len(msgs) <= 100:
-					await client.delete_messages(msgs)
-
-				# Just a funny message
-				await client.send_message(message.channel, 'I was always taught to leave a place better than I found it, {} total deleted messages.' .format(counter+1))
-
-				await asyncio.sleep(5)
-
-				# Deleting the funny message
-				async for log in client.logs_from(message.channel):
-					if str(log.author.id) == client.user.id:
-						await client.delete_message(log)
-
-				# Stop the music
-				if player is not None and player.is_playing():
-					player.stop()
-
-				# Disconnect from voice
-				for voice in client.voice_clients:
-					if voice.is_connected():
-						voice.disconnect()
-				
-				# Logs the bot out
-				await client.logout()
-
-				# Closes the client connection to allow for perfect shutdown
-				await client.close()
+				await AcaBot.shutdown(client, config, message)
 			elif msg[0] == 'testing':
-				await functions.cleanChat(client, config, message)
+				await AcaBot.shutdown(client, config, message)
 
 
 	'''------TRUSTED COMMANDS------'''
@@ -118,7 +76,7 @@ async def on_message(message):
 		if ((config.Role_Permissions is not None and config.Trusted_Permissions is None) and str(message.author.top_role) in config.Role_Permissions) or (config.Trusted_Permissions is not None and str(message.author.id) in config.Trusted_Permissions):
 			# Delete all of the bot's previous outputs
 			if msg[0] == 'delete':
-				await functions.cleanChat(client, config, message)
+				await functions.cleanChat(client, config, message, 0)
 
 			elif msg[0] == 'deletenp':
 				await client.send_message(message.channel, 'You have delete the song {0} with the url {1}... Please queue it again if you would like it in the playlist again.' .format(player.title, player.url))
@@ -207,7 +165,7 @@ async def on_message(message):
 				await AcaBot.summonToVoice(client, config, message)
 
 			# CHange the volume level of the music
-			elif msg[0].startswith('v'):
+			elif msg[0] == 'v' or msg[0] == 'volume':
 				if len(msg) > 1:
 					if msg[1].isdigit():
 						player.volume = int(msg[1]) / 100
