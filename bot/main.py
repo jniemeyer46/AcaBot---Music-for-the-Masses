@@ -621,7 +621,5 @@ async def MusicPlayer():
 				player.start()
 
 			print(config.CoolDownQueue)
-			print(config.Autoplaylist)
-
 
 client.run(config.Token)
