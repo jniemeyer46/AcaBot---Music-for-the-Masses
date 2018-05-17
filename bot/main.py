@@ -6,10 +6,10 @@ import asyncio
 import itertools
 import youtube_dl
 import os.path
+from MusicBot import MusicBot
 from discord.ext import commands
 from math import floor
 
-import commands
 #from config import Config, DefaultConfigs
 from personal_config import Config, DefaultConfigs
 
@@ -23,6 +23,8 @@ config = Config(config_file)
 
 if not discord.opus.is_loaded():
 	discord.opus.load_opus('opus.dll')
+
+test = MusicBot(config.Volume)
 
 # Variable Holders
 voice = None
@@ -94,6 +96,8 @@ async def on_message(message):
 
 				# Closes the client connection to allow for perfect shutdown
 				await client.close()
+			elif msg[0] == 'testing':
+				await test.summonToVoice(message)
 
 
 	'''------TRUSTED COMMANDS------'''

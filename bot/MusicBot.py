@@ -1,6 +1,14 @@
 class MusicBot:
+	# Holds the youtube data information
+	player = None
+	# Holds the current voice session information
+	voice = None
+
 	def __init__(self, volume):
 		self.volume = volume
+
+	async def summonToVoice(self, message):
+		print('hello')
 
 
 	# Get Volume
@@ -26,7 +34,7 @@ class MusicBot:
 
 
 
-
+'''
 	# Summons the bot to the voice channel of the message author if they have the proper permissions
 async def summon(message):
 	global voice
@@ -77,8 +85,8 @@ async def MusicPlayer():
 
 			# Begins playing music through voice chat
 			player.start()
+
 		else:
-			
 			# Creates a stream for music playing
 			player = await voice.create_ytdl_player(config.Userplaylist[0])
 			player.volume = config.Volume
@@ -94,6 +102,7 @@ async def MusicPlayer():
 
 			# Begins playing music through voice chat
 			player.start()
+
 	elif config.Autoplaylist:
 		# Song url that will be played
 		song = random.choice(config.Autoplaylist)
@@ -210,3 +219,4 @@ async def MusicPlayer():
 				player.start()
 
 			print(config.CoolDownQueue)
+			'''
