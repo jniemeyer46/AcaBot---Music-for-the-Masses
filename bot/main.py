@@ -9,7 +9,6 @@ import os.path
 from discord.ext import commands
 from math import floor
 
-import commands
 #from config import Config, DefaultConfigs
 from personal_config import Config, DefaultConfigs
 
