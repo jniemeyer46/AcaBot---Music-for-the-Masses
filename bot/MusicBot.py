@@ -29,6 +29,10 @@ class MusicBot:
 			await self.__voice.disconnect()
 
 
+	async def MusicPlayer(self):
+		pass
+
+
 	# Shutdown the bot
 	async def shutdown(self, client, config, message):
 		await functions.cleanChat(client, config, message, 1)
@@ -64,10 +68,17 @@ class MusicBot:
 		if not voiceChannels:
 			await self.setVoice(client, summoned_channel)
 
+			# Start the music
+			await self.MusicPlayer()
+
 			# Announces AcaBot's arrival
 			await client.send_message(message.channel, 'AcaBot has joined the voice channel "{}", get ready for some music!' .format(summoned_channel))
+
 		else:
 			await self.__voice.move_to(summoned_channel)
+
+			# Start the music
+			await self.MusicPlayer()
 
 			# Announces AcaBot's arrival
 			await client.send_message(message.channel, 'AcaBot has moved to the voice channel "{}", get ready for some music!' .format(summoned_channel))
@@ -75,50 +86,18 @@ class MusicBot:
 		return True
 
 	# Get Song
+	# MusicPlayer
 	# Play
 	# Pause
 	# Get Playlist
 	# Set Playlist
-	# Shutdown
-	# Disconnect
 	# Deletenp
-	# Shuffle
-	# Store
 	# now playing
 	# queue
 	# Quiet
 	# Skip
-
-
-
-
-
-
+	
 '''
-	# Summons the bot to the voice channel of the message author if they have the proper permissions
-async def summon(message):
-	global voice
-	summoned_channel = message.author.voice.voice_channel
-
-	# Checks to see if the message sender is in a voice channel
-	if summoned_channel is None:
-		await client.send_message(message.channel, '{}, You are not currently in a voice channel' .format(message.author.nick))
-		return False
-
-	# Makes a list of the voice channels joined by the bot
-	voiceChannel = client.voice_clients
-
-	# Places the bot in the appropriate voice channel
-	if not voiceChannel:
-		voice = await client.join_voice_channel(summoned_channel)
-		await MusicPlayer()
-		print('AcaBot has joined the channel "{}"!' .format(summoned_channel))
-	else:
-		for voice in client.voice_clients:
-			await voice.move_to(summoned_channel)
-			print('AcaBot has moved to the channel "{}"!' .format(summoned_channel))
-	return True
-
 
 # Attempts to constantly play music (needs reworked)
 async def MusicPlayer():

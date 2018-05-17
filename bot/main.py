@@ -65,6 +65,7 @@ async def on_message(message):
 			# Shuts down the bot (Not the correct way to do this, need to look into it still...  Technically works though atm)
 			if msg[0] == 'shutdown':
 				await AcaBot.shutdown(client, config, message)
+				
 			elif msg[0] == 'testing':
 				await AcaBot.shutdown(client, config, message)
 
