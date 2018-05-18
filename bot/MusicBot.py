@@ -1,3 +1,4 @@
+import asyncio
 import functions
 import os.path
 import random
@@ -10,6 +11,10 @@ class MusicBot:
 	# Holds the current voice session information
 	__voice = None
 
+	# Queues
+	coolDownPlaylist = []
+	userPlaylist = []
+
 	def __init__(self, client, volume):
 		self.__volume = volume
 
@@ -18,6 +23,10 @@ class MusicBot:
 	# Set the player variable
 	async def setPlayer(self, song):
 		self.__player = await self.__voice.create_ytdl_player(song)
+
+
+	async def setPlayerVolume(self):
+		self.__player.volume = self.__volume
 
 
 	# Set a new volume level
@@ -37,8 +46,140 @@ class MusicBot:
 			await self.__voice.disconnect()
 
 
+	async def displayQueue(self, client, message):
+		await client.send_message(message.channel, 
+					self.userPlaylist
+				)
+
+
+	# Plays music continuously
 	async def MusicPlayer(self, client, config):
-		pass
+		# If no Autoplaylist exists or if it is empty
+		if config.Autoplaylist is None or not config.Autoplaylist:
+			self.__player = await self.__voice.create_ytdl_player("ytsearch:start")
+
+		# Otherwise start the music
+		else:
+			# Random starting song
+			song = random.choice(config.Autoplaylist)
+
+			# Create the stream for music
+			await self.setPlayer(song)
+			await self.setPlayerVolume()
+
+			# # Start the coolDownQeueu creation
+			if len(config.Autoplaylist) > 1:
+				self.coolDownPlaylist.append(song)
+
+			await asyncio.sleep(3)
+
+			# Begin the music
+			self.__player.start()
+
+		# Continue the music
+		while True:
+			# Waiting
+			if config.Autoplaylist is None or not config.Autoplaylist or self.__player.is_playing():
+				await asyncio.sleep(2)
+
+			# Time for a new song
+			elif self.__player.is_done():
+				self.__player.stop()
+
+				# If a user queued a song
+				if self.userPlaylist:
+					# Song that will be played
+					if config.Shuffle:
+						song = random.choice(self.userPlaylist)
+					else:
+						song = self.userPlaylist[0]
+
+					# Create the stream for music
+					await self.setPlayer(song)
+					await self.setPlayerVolume()
+
+					if len(self.coolDownPlaylist) >= floor(len(config.Autoplaylist) * config.CoolDownQueueSize) and len(self.coolDownPlaylist) > 0:
+						# Remove the first song in the Cool Down Queue
+						self.coolDownPlaylist.pop(0)
+
+						# Add to the cool down queue so no repeats happen
+						self.coolDownPlaylist.append(song)
+
+					elif len(self.coolDownPlaylist) < floor(len(config.Autoplaylist) * config.CoolDownQueueSize) and len(config.Autoplaylist) > 1:
+						# Add to the cool down queue so no repeats happen
+						self.coolDownPlaylist.append(song)
+
+					# Remove the song from the user playlist
+					self.userPlaylist.remove(song)
+
+					await asyncio.sleep(3)
+
+					# Begins playing music through voice chat
+					self.__player.start()
+
+				# When the userPlaylist is empty
+				elif config.Autoplaylist:
+					# Song url that will be played
+					song = random.choice(config.Autoplaylist)
+
+					# Make sure the song isnt on cool down
+					while song in self.coolDownPlaylist:
+						song = random.choice(config.Autoplaylist)
+
+					# Create the stream for music
+					await self.setPlayer(song)
+					await self.setPlayerVolume()
+
+					if len(self.coolDownPlaylist) >= floor(len(config.Autoplaylist) * config.CoolDownQueueSize) and len(self.coolDownPlaylist) > 0:
+						# Remove the first song in the Cool Down Queue
+						self.coolDownPlaylist.pop(0)
+
+						# Add to the cool down queue so no repeats happen
+						self.coolDownPlaylist.append(song)
+
+					elif len(self.coolDownPlaylist) < floor(len(config.Autoplaylist) * config.CoolDownQueueSize) and len(config.Autoplaylist) > 1:
+						# Add to the cool down queue so no repeats happen
+						self.coolDownPlaylist.append(song)
+
+					await asyncio.sleep(3)
+
+					# Begins playing music through voice chat
+					self.__player.start()
+
+
+	# Output information on the song that is currently playing
+	async def nowPlaying(self, client, message):
+		await client.send_message(message.channel, 
+			'You are currently listening to {0}. \n' 
+			'The URL for the current song is {1}' .format(self.__player.title, self.__player.url))
+
+
+	async def queueToUserPlaylist(self, client, config, message):
+		songs = message.content.split(' ')
+
+		for song in songs:
+			if 'www.youtube.com/watch' in song:
+				self.userPlaylist.append(song)
+
+				if song not in config.Autoplaylist:
+					if '.txt' in config.AutoplaylistName:
+						# open the Autoplaylist file and put the new url in
+						with open('playlists/{}' .format(config.AutoplaylistName), 'a') as f:
+							f.write('{} \n' .format(song))
+						f.close()
+
+					elif '.txt' not in config.AutoplaylistName:
+						# Open the Autoplaylist file and put the new url in
+						with open('playlists/{}.txt' .format(config.AutoplaylistName), 'a') as f:
+							f.write('{}\n' .format(song))
+						f.close()
+
+					# Also add it to the current Autoplaylist being used
+					config.Autoplaylist.append(song)
+					
+				else:
+					self.userPlaylist.append(song)
+
 
 
 	# Shutdown the bot
@@ -46,7 +187,7 @@ class MusicBot:
 		await functions.cleanChat(client, config, message, 1)
 
 		# Stop the music
-		if self.__player is not None and player.is_playing():
+		if self.__player is not None and self.__player.is_playing():
 			self.__player.stop()
 
 		# Disconnect from voice if needed
@@ -57,6 +198,12 @@ class MusicBot:
 
 		# Finally close the client connection
 		await client.close()
+
+
+	# Skip the currently playing song
+	async def skipSong(self):
+		if self.__player is not None:
+			self.__player.stop()
 
 
 	# Attempts to join a voice channel
@@ -76,6 +223,10 @@ class MusicBot:
 		if not voiceChannels:
 			await self.setVoice(client, summoned_channel)
 
+			# Make sure the bot doesnt kill itself
+			if self.__player is not None:
+				self.__player.stop()
+
 			# Start the music
 			await self.MusicPlayer(client, config)
 
@@ -85,8 +236,9 @@ class MusicBot:
 		else:
 			await self.__voice.move_to(summoned_channel)
 
-			# Start the music
-			await self.MusicPlayer(client, config)
+			# Make sure the bot doesnt kill itself
+			if self.__player is not None:
+				self.__player.stop()
 
 			# Announces AcaBot's arrival
 			await client.send_message(message.channel, 'AcaBot has moved to the voice channel "{}", get ready for some music!' .format(summoned_channel))
@@ -94,7 +246,6 @@ class MusicBot:
 		return True
 
 	# Get Song
-	# MusicPlayer
 	# Play
 	# Pause
 	# Get Playlist
@@ -111,161 +262,4 @@ class MusicBot:
 	self.__player.volume = self.__volume
 
 	self.__player.start()
-
-# Attempts to constantly play music (needs reworked)
-async def MusicPlayer():
-	# Initial music video queued here
-	if config.Userplaylist:
-		if config.Shuffle:
-			url = random.choice(config.Userplaylist)
-
-			# Creates a stream for music playing
-			player = await voice.create_ytdl_player(url)
-			player.volume = config.Volume
-
-			if len(config.Autoplaylist) > 1:
-				# Start creating a cool down queue so no repeats happen
-				config.CoolDownQueue.append(url)
-
-			# Remove the song from the user playlist
-			config.Userplaylist.remove(url)
-
-			await asyncio.sleep(3)
-
-			# Begins playing music through voice chat
-			player.start()
-
-		else:
-			# Creates a stream for music playing
-			player = await voice.create_ytdl_player(config.Userplaylist[0])
-			player.volume = config.Volume
-
-			if len(config.Autoplaylist) > 1:
-				# Start creating a cool down queue so no repeats happen
-				config.CoolDownQueue.append(config.Userplaylist[0])
-
-			# Remove the song from the user playlist
-			config.Userplaylist.pop(0)
-
-			await asyncio.sleep(3)
-
-			# Begins playing music through voice chat
-			player.start()
-
-	elif config.Autoplaylist:
-		# Song url that will be played
-		song = random.choice(config.Autoplaylist)
-
-		# Creates a stream for music playing
-		player = await voice.create_ytdl_player(song)
-		player.volume = config.Volume
-
-		if len(config.Autoplaylist) > 1:
-			# Start creating a cool down queue so no repeats happen
-			config.CoolDownQueue.append(song)
-
-		await asyncio.sleep(3)
-
-		# Begins playing music through voice chat
-		player.start()
-
-	# Continuous Loop that will continuously check if there is music playing.
-	# Wait if there is music playing, queue a song otherwise.
-	while True:
-		if config.Autoplaylist is None or not config.Autoplaylist or player.is_playing():
-			await asyncio.sleep(2)
-
-		elif player.is_done():
-			player.stop()
-
-			if config.Userplaylist:
-				if config.Shuffle:
-					# Song url that will be played
-					url = random.choice(config.Userplaylist)
-
-					# Creates a stream for music playing
-					player = await voice.create_ytdl_player(url)
-					player.volume = config.Volume
-
-					if len(config.CoolDownQueue) >= floor(len(config.Autoplaylist) * config.CoolDownQueueSize):
-						if len(config.CoolDownQueue) > 0:
-							# Remove the first song in the Cool Down Queue
-							config.CoolDownQueue.pop(0)
-						
-						if len(config.Autoplaylist) > 1:
-							# Add to the cool down queue so no repeats happen
-							config.CoolDownQueue.append(url)
-
-					elif len(config.CoolDownQueue) < floor(len(config.Autoplaylist) * config.CoolDownQueueSize):
-						# Add to the cool down queue so no repeats happen
-						config.CoolDownQueue.append(url)
-
-					# Remove the song from the user playlist
-					config.Userplaylist.remove(url)
-
-					await asyncio.sleep(3)
-
-					# Begins playing music through voice chat
-					player.start()
-
-				else:
-					# Song url that will be played
-					song = config.Userplaylist[0]
-
-					# Creates a stream for music playing
-					player = await voice.create_ytdl_player(song)
-					player.volume = config.Volume
-				
-					if len(config.CoolDownQueue) >= floor(len(config.Autoplaylist) * config.CoolDownQueueSize):
-						if len(config.CoolDownQueue) > 0:
-							# Remove the first song in the Cool Down Queue
-							config.CoolDownQueue.pop(0)
-						
-						if len(config.Autoplaylist) > 1:
-							# Add to the cool down queue so no repeats happen
-							config.CoolDownQueue.append(song)
-
-					elif len(config.CoolDownQueue) < floor(len(config.Autoplaylist) * config.CoolDownQueueSize):
-						# Add to the cool down queue so no repeats happen
-						config.CoolDownQueue.append(song)
-
-					# Remove the song from the user playlist
-					config.Userplaylist.pop(0)
-
-					await asyncio.sleep(3)
-
-					# Begins playing music through voice chat
-					player.start()
-
-			elif config.Autoplaylist:
-				# Song url that will be played
-				song = random.choice(config.Autoplaylist)
-
-				while song in config.CoolDownQueue:
-					song = random.choice(config.Autoplaylist)
-
-				# Creates a stream for music playing
-				player = await voice.create_ytdl_player(song)
-				player.volume = config.Volume
-
-				if len(config.CoolDownQueue) >= floor(len(config.Autoplaylist) * config.CoolDownQueueSize):
-					if len(config.CoolDownQueue) > 0:
-						# Remove the first song in the Cool Down Queue
-						config.CoolDownQueue.pop(0)
-
-					if len(config.Autoplaylist) > 1:
-						# Add to the cool down queue so no repeats happen
-						config.CoolDownQueue.append(song)
-
-				elif len(config.CoolDownQueue) < floor(len(config.Autoplaylist) * config.CoolDownQueueSize):
-					if len(config.Autoplaylist) > 1:
-						# Add to the cool down queue so no repeats happen
-						config.CoolDownQueue.append(song)
-
-				await asyncio.sleep(3)
-
-				# Begins playing music through voice chat
-				player.start()
-
-			print(config.CoolDownQueue)
 			'''

@@ -190,9 +190,9 @@ async def on_message(message):
 
 					'COMMANDS FOR EVERYONE \n'
 					'	{0}help - Outputs commands for AcaBot. \n'
-					'	~{0}np - Outputs information on the song that is currently playing. \n'
+					'	{0}np - Outputs information on the song that is currently playing. \n'
 					'	~{0}pause - Pauses the currently playing song. \n'
-					'	~{0}queue (or \\q) - Outputs the list of songs that users have asked to be played (in order). \n'
+					'	{0}queue (or \\q) - Outputs the list of songs that users have asked to be played (in order). \n'
 					'	~{0}quiet - Mutes AcaBot for a single user (if owner uses the command it mutes the bot for the entire server). \n'
 					'	~{0}skip (or !s) - Skips the currently playing song. \n'
 					'	~{0}play <YOUTUBE URL> (or !p) - This will queue a song to be played (will be sentence recognition later). \n'
@@ -201,9 +201,7 @@ async def on_message(message):
 
 		# Outputs information about the song that is currently playing
 		elif msg[0] == 'np':
-			await client.send_message(message.channel, 
-				'You are currently listening to {0}. \n' 
-				'The URL for the current song is {1}' .format(player.title, player.url))
+			await AcaBot.nowPlaying(client, message)
 
 		# Pause the bot (Not sure if I want everyone to be able to do this or not)
 		elif msg[0] == 'pause':
@@ -211,9 +209,8 @@ async def on_message(message):
 
 		# Outputs the list of songs that have been queued by people in the discord channel
 		elif msg[0] == 'q' or msg == 'queue':
-			await client.send_message(message.channel, 
-					config.Userplaylist
-				)
+			await AcaBot.displayQueue(client, message)
+			
 
 		# If the owner uses this command it will mute the bot for the entire channel
 		# If anyone else uses this command it will only mute the bot for them alone
@@ -222,36 +219,13 @@ async def on_message(message):
 
 		# Skips the current song
 		elif msg[0] == 's' or msg == 'skip':
-			if player is not None:
-				player.stop()
+			await AcaBot.skipSong()
+
 
 		# User enters a youtube link to be played ADD STORE HERE
-		elif msg[0].startswith('p'):
-			urls = message.content.split(' ')
-
-			for url in urls:
-				if 'www.youtube.com/watch' in url:
-					if config.Store:
-						config.Userplaylist.append(url)
-
-						if url not in config.Autoplaylist:
-							if '.txt' in config.AutoplaylistName:
-								# Open the Autoplaylist file and put the new url in
-								with open('playlists/{}' .format(config.AutoplaylistName), 'a') as f:
-									f.write('{}\n' .format(url))
-								f.close()
-
-							elif '.txt' not in config.AutoplaylistName:
-								# Open the Autoplaylist file and put the new url in
-								with open('playlists/{}.txt' .format(config.AutoplaylistName), 'a') as f:
-									f.write('{}\n' .format(url))
-								f.close()
-
-							# Queue up the songs
-							config.Autoplaylist.append(url)
-					else:
-						config.Userplaylist.append(url)
-
+		elif msg[0] == 'p' or msg[0] == 'play':
+			await AcaBot.queueToUserPlaylist(client, config, message)
+			
 		# User enters a new playlist file for the bot to pull from
 		elif msg[0].startswith('roll'):
 			dice = ["".join(x) for _, x in itertools.groupby(msg[1], key=str.isdigit)]
