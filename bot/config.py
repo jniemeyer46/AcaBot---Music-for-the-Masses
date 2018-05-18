@@ -2,11 +2,15 @@ import configparser
 
 class Config:
 	# Holds the commands that do not take any parameters
-	OwnerCommands = ['shutdown', 'testing']
-	TrustedCommands = ['delete', 'playlist', 'shuffle','store', 'summon', 'v','volume']
+	OwnerCommands = ['shutdown']
+	TrustedCommands = ['delete', 'deletenp', 'playlist', 'shuffle','store', 'summon', 'v','volume']
 	GeneralCommands = ['help', 'np', 'pause', 'p', 'play', 'q', 'queue', 'quiet', 'roll', 's', 'skip']
 
+	# Playlists
+	Autoplaylist = []
 	Userplaylist = []
+
+	# Used to make sure the bot doesnt repeat songs too often
 	CoolDownQueue = []
 
 	def __init__(self, config_file):
@@ -32,6 +36,9 @@ class Config:
 		# .getfloat commands
 		self.Volume = config.getfloat('MusicBot', 'Volume', fallback = DefaultConfigs.Default_Volume)
 
+		# .getint commands
+		self.CoolDownQueueSize = config.getfloat('MusicBot', 'CoolDownQueueSize', fallback = DefaultConfigs.DefaultCoolDownQueueSize)
+
 		# .getboolean commands
 		self.Store = config.getboolean('MusicBot', 'Save', fallback = DefaultConfigs.Save_to_Playlist)
 		self.Shuffle = config.getboolean('MusicBot', 'Shuffle', fallback = DefaultConfigs.Shuffle_Queue)
@@ -48,8 +55,16 @@ class Config:
 
 	def Create_Autoplaylist(self):
 		if self.AutoplaylistName is not None and self.AutoplaylistName != 'None':
-			with open('playlists/' + self.AutoplaylistName + '.txt') as f:
-				self.Autoplaylist = f.read().split()-
+			if '.txt' in self.AutoplaylistName:
+				with open('playlists/' + self.AutoplaylistName) as f:
+					self.Autoplaylist = f.read().split()
+
+			elif '.txt' not in self.AutoplaylistName:
+				with open('playlists/' + self.AutoplaylistName + '.txt') as f:
+					self.Autoplaylist = f.read().split()
+			else:
+				raise Error(
+					"There seems to be a problem with the Autoplaylist you have set in the Settings.ini file")
 
 	
 	def Create_Trusted_List(self):
@@ -89,6 +104,8 @@ class DefaultConfigs:
 
 	# Default volume
 	Default_Volume = 0.10
+	# Default Cool Down Queue Size
+	DefaultCoolDownQueueSize = 0.75
 	# No playlist will play if the owner does not set one
 	Default_Autoplaylist = None
 	# Whether or not the user queued songs will be stored
