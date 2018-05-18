@@ -20,6 +20,11 @@ class MusicBot:
 
 
 	'''------------- SETTERS AND GETTERS-------------'''
+	# Get the current volume level
+	async def getVolume(self):
+		return self.__volume
+
+
 	# Set the player variable
 	async def setPlayer(self, song):
 		self.__player = await self.__voice.create_ytdl_player(song)
@@ -40,16 +45,44 @@ class MusicBot:
 
 
 	'''-------------FUNCTIONALITY-------------'''
+	# Delete the currently playing song from the Autoplaylist and skip the rest of the song
+	async def deleteAndSkipNP(self, client, config, message):
+		url = self.__player.url
+		songTitle = self.__player.title
+
+		await client.send_message(message.channel, 'You have delete the song {0} with the url {1}... Please queue it again if you want it back in the playlist.' .format(songTitle, url))
+		config.Autoplaylist.remove(url)
+
+		# rewrite the Autoplaylist excluding the removed song
+		if '.txt' in config.AutoplaylistName:
+			f = open('playlists/' + config.AutoplaylistName, 'w')
+
+			for song in config.Autoplaylist:
+				f.write(song + '\n')
+
+		elif '.txt' not in config.AutoplaylistName:
+			f = open('playlists/' + config.AutoplaylistName + '.txt', 'w')
+
+			for song in config.Autoplaylist:
+				f.write(song + '\n')
+
+		# Now skip the song
+		await self.skipSong()
+
+
 	# Disconnect from the current voice channel
 	async def disconnect(self):
 		if self.__voice is not None and self.__voice.is_connected():
+			self.__player.pause()
 			await self.__voice.disconnect()
+			self.__voice = None
+			print(self.__voice)
 
 
 	async def displayQueue(self, client, message):
 		await client.send_message(message.channel, 
-					self.userPlaylist
-				)
+			self.userPlaylist
+			)
 
 
 	# Plays music continuously
@@ -77,9 +110,9 @@ class MusicBot:
 			self.__player.start()
 
 		# Continue the music
-		while True:
+		while self.__voice is not None:
 			# Waiting
-			if config.Autoplaylist is None or not config.Autoplaylist or self.__player.is_playing():
+			if (config.Autoplaylist is None or not config.Autoplaylist or self.__player.is_playing()) and not self.__player.is_done():
 				await asyncio.sleep(2)
 
 			# Time for a new song
@@ -176,10 +209,9 @@ class MusicBot:
 
 					# Also add it to the current Autoplaylist being used
 					config.Autoplaylist.append(song)
-					
+
 				else:
 					self.userPlaylist.append(song)
-
 
 
 	# Shutdown the bot
@@ -244,6 +276,27 @@ class MusicBot:
 			await client.send_message(message.channel, 'AcaBot has moved to the voice channel "{}", get ready for some music!' .format(summoned_channel))
 
 		return True
+
+
+	async def volumeController(self, client, message):
+		splitMessage = message.content.split(' ')
+		minArgs = 1
+		maxArgs = 3
+
+		if (minArgs < len(splitMessage) < maxArgs) and splitMessage[1].isdigit():
+			newVolume = int(splitMessage[1])
+
+			if newVolume > 100:
+				newVolume = 100
+
+			self.__volume = newVolume / 100
+			self.__player.volume = self.__volume
+
+			await client.send_message(message.channel, 'The volume is now set to {} percent' .format(newVolume))
+
+		else:
+			await client.send_message(message.channel, 'The current volume is {}' .format(await self.getVolume() * 100))
+
 
 	# Get Song
 	# Play

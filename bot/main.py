@@ -58,7 +58,7 @@ async def on_message(message):
 				await AcaBot.shutdown(client, config, message)
 
 			elif msg[0] == 'testing':
-				await AcaBot.MusicPlayer(client, config)
+				pass
 
 
 	'''------TRUSTED COMMANDS------'''
@@ -71,19 +71,7 @@ async def on_message(message):
 				await functions.cleanChat(client, config, message, 0)
 
 			elif msg[0] == 'deletenp':
-				await client.send_message(message.channel, 'You have delete the song {0} with the url {1}... Please queue it again if you would like it in the playlist again.' .format(player.title, player.url))
-				config.Autoplaylist.remove(player.url)
-
-				if '.txt' in config.AutoplaylistName:
-					f = open('playlists/' + config.AutoplaylistName, "w")
-
-					for song in config.Autoplaylist:
-						f.write(song + '\n')
-				elif '.txt' not in config.AutoplaylistName:
-					f = open('playlists/' + config.AutoplaylistName + '.txt', "w")
-
-					for song in config.Autoplaylist:
-						f.write(song + '\n')
+				await AcaBot.deleteAndSkipNP(client, config, message)
 
 			elif msg[0] == 'disconnect':
 				await AcaBot.disconnect()
@@ -158,13 +146,7 @@ async def on_message(message):
 
 			# CHange the volume level of the music
 			elif msg[0] == 'v' or msg[0] == 'volume':
-				if len(msg) > 1:
-					if msg[1].isdigit():
-						player.volume = int(msg[1]) / 100
-						config.Volume = int(msg[1]) / 100
-						await client.send_message(message.channel, 'The volume is now set to {}' .format(msg[1]))
-				else:
-					await client.send_message(message.channel, 'The current volume is {}' .format(config.Volume * 100))
+				await AcaBot.volumeController(client, message)
 
 
 	'''------GENERAL COMMANDS------'''
@@ -181,7 +163,8 @@ async def on_message(message):
 
 					'TRUSTED USER COMMANDS \n'
 					'	{0}delete - Deletes the last 100 commands for AcaBot and AcaBot message, can use multiple times to delete them all. \n'
-					'	~{0}deletenp - Deletes the song that is currently playing from the autoplaylist. \n'
+					'	{0}deletenp - Deletes the song that is currently playing from the autoplaylist. \n'
+					'	~{0}disconnect - stops the music streaming and disconnects AcaBot from voice'
 					'	~{0}playlist <name of a .txt file> - This changed the autoplaylist to a user defined list (if no .txt file is specified the autoplaylist will be NONE). \n'
 					'	{0}shuffle - Determines whether the queue should be shuffles (Toggled). \n'
 					'	{0}store - Determines whether songs that users play should be added to the current autoplaylist (Toggled). \n'
@@ -191,10 +174,9 @@ async def on_message(message):
 					'COMMANDS FOR EVERYONE \n'
 					'	{0}help - Outputs commands for AcaBot. \n'
 					'	{0}np - Outputs information on the song that is currently playing. \n'
-					'	~{0}pause - Pauses the currently playing song. \n'
 					'	{0}queue (or \\q) - Outputs the list of songs that users have asked to be played (in order). \n'
 					'	~{0}quiet - Mutes AcaBot for a single user (if owner uses the command it mutes the bot for the entire server). \n'
-					'	~{0}skip (or !s) - Skips the currently playing song. \n'
+					'	{0}skip (or !s) - Skips the currently playing song. \n'
 					'	~{0}play <YOUTUBE URL> (or !p) - This will queue a song to be played (will be sentence recognition later). \n'
 					'	~{0}roll <<number of dice>d<type of dice>> - Will roll a specified dice for the user (example: !roll 5d20 (rolls 5 dice that are 20 sided)). \n' .format(config.Command_Prefix)
 				)
@@ -203,9 +185,6 @@ async def on_message(message):
 		elif msg[0] == 'np':
 			await AcaBot.nowPlaying(client, message)
 
-		# Pause the bot (Not sure if I want everyone to be able to do this or not)
-		elif msg[0] == 'pause':
-			pass
 
 		# Outputs the list of songs that have been queued by people in the discord channel
 		elif msg[0] == 'q' or msg == 'queue':
