@@ -102,7 +102,7 @@ class MusicBot:
 
 			# # Start the coolDownQueue creation
 			if len(config.Autoplaylist) > 1:
-				self.coolDownPlaylist.append("song")
+				self.coolDownPlaylist.append(song)
 
 			await asyncio.sleep(3)
 
