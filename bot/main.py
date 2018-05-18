@@ -31,7 +31,7 @@ if not discord.opus.is_loaded():
 
 ''' BOT STARTS HERE '''
 
-AcaBot = MusicBot(client, config.Volume)
+AcaBot = MusicBot(client, config.Volume, config.AutoplaylistName)
 
 @client.event
 async def on_ready():
@@ -78,49 +78,7 @@ async def on_message(message):
 
 			# User enters a new playlist file for the bot to pull from (if empty it will not use an autoplaylist)
 			elif msg[0] == 'playlist':
-				temp = message.content
-				playlistName = temp.split(' ')
-
-				config.CoolDownQueue.clear()
-
-				if len(playlistName) < 2:
-					await client.send_message(message.channel, 'You have turned off AcaBot\'s autoplaylist.')
-
-					if config.AutoplaylistName is not None:
-						# Clears the autoplaylist
-						config.Autoplaylist.clear()
-
-				elif '.txt' in playlistName[1]:
-					await client.send_message(message.channel, 'You have changed AcaBot\'s playlist to {}' .format(playlistName[1]))
-
-					# Set the autoplaylist name
-					config.AutoplaylistName = playlistName[1]
-
-					if os.path.exists('playlists/' + config.AutoplaylistName):
-						with open('playlists/' + config.AutoplaylistName) as f:
-							config.Autoplaylist = f.read().split()
-
-					else:
-						# Create the file if it doesn't exist already
-						f = open('playlists/' + playlistName[1], "w+")
-						config.Autoplaylist = f.read().split()
-						f.close()
-
-				elif '.txt' not in playlistName[1]:
-					await client.send_message(message.channel, 'You have changed AcaBot\'s playlist to {}.txt' .format(playlistName[1]))
-
-					# Set the autoplaylist name
-					config.AutoplaylistName = playlistName[1]
-
-					if os.path.exists('playlists/' + config.AutoplaylistName + '.txt'):
-						with open('playlists/' + config.AutoplaylistName + '.txt') as f:
-							config.Autoplaylist = f.read().split()
-
-					else:
-						# Create the file if it doesn't exist already
-						f = open('playlists/' + playlistName[1] + '.txt', "w+")
-						config.Autoplaylist = f.read().split()
-						f.close()
+				await AcaBot.switchPlaylists(client, config, message)
 
 			# Toggles shuffle for the queue
 			elif msg[0] == 'shuffle':
@@ -164,12 +122,12 @@ async def on_message(message):
 					'TRUSTED USER COMMANDS \n'
 					'	{0}delete - Deletes the last 100 commands for AcaBot and AcaBot message, can use multiple times to delete them all. \n'
 					'	{0}deletenp - Deletes the song that is currently playing from the autoplaylist. \n'
-					'	~{0}disconnect - stops the music streaming and disconnects AcaBot from voice'
-					'	~{0}playlist <name of a .txt file> - This changed the autoplaylist to a user defined list (if no .txt file is specified the autoplaylist will be NONE). \n'
+					'	{0}disconnect - stops the music streaming and disconnects AcaBot from voice'
+					'	{0}playlist <name of a .txt file> - This changed the autoplaylist to a user defined list (if no .txt file is specified the autoplaylist will be NONE). \n'
 					'	{0}shuffle - Determines whether the queue should be shuffles (Toggled). \n'
 					'	{0}store - Determines whether songs that users play should be added to the current autoplaylist (Toggled). \n'
 					'	{0}summon - Summons the bot to the caller\'s voice channel'
-					'	~{0}volume (or !v) - Changes the volume level for the entire server. \n\n'
+					'	{0}volume (or !v) - Changes the volume level for the entire server. \n\n'
 
 					'COMMANDS FOR EVERYONE \n'
 					'	{0}help - Outputs commands for AcaBot. \n'
@@ -185,11 +143,9 @@ async def on_message(message):
 		elif msg[0] == 'np':
 			await AcaBot.nowPlaying(client, message)
 
-
 		# Outputs the list of songs that have been queued by people in the discord channel
 		elif msg[0] == 'q' or msg == 'queue':
-			await AcaBot.displayQueue(client, message)
-			
+			await AcaBot.displayQueue(client, message)	
 
 		# If the owner uses this command it will mute the bot for the entire channel
 		# If anyone else uses this command it will only mute the bot for them alone
@@ -199,7 +155,6 @@ async def on_message(message):
 		# Skips the current song
 		elif msg[0] == 's' or msg == 'skip':
 			await AcaBot.skipSong()
-
 
 		# User enters a youtube link to be played ADD STORE HERE
 		elif msg[0] == 'p' or msg[0] == 'play':
