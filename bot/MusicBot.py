@@ -102,7 +102,7 @@ class MusicBot:
 
 			# # Start the coolDownQueue creation
 			if len(config.Autoplaylist) > 1:
-				self.coolDownPlaylist.append(song)
+				self.coolDownPlaylist.append("song")
 
 			await asyncio.sleep(3)
 
@@ -191,6 +191,7 @@ class MusicBot:
 
 	async def queueToUserPlaylist(self, client, config, message):
 		songs = message.content.split()
+		songs.pop(0)
 
 		for song in songs:
 			if 'www.youtube.com/watch' in song:
@@ -208,6 +209,16 @@ class MusicBot:
 
 					# Also add it to the current Autoplaylist being used
 					config.Autoplaylist.append(song)
+
+
+			#FIGURE THIS OUT LATER, for some reason the url command doesnt actually return a url so idk wat to do yet
+			'''# Search for a video instead
+												else:
+													temp = await self.__voice.create_ytdl_player("ytsearch:{}" .format(song))
+													print(temp.url)
+													print(temp.download_url)
+													print(temp.yt)
+													print(temp.title)'''
 
 
 	# Shutdown the bot
