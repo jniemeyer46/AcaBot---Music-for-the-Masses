@@ -100,7 +100,7 @@ class MusicBot:
 			await self.setPlayer(song)
 			await self.setPlayerVolume()
 
-			# # Start the coolDownQeueu creation
+			# # Start the coolDownQueue creation
 			if len(config.Autoplaylist) > 1:
 				self.coolDownPlaylist.append(song)
 
@@ -179,6 +179,8 @@ class MusicBot:
 					# Begins playing music through voice chat
 					self.__player.start()
 
+				print(self.coolDownPlaylist)
+
 
 	# Output information on the song that is currently playing
 	async def nowPlaying(self, client, message):
@@ -188,7 +190,7 @@ class MusicBot:
 
 
 	async def queueToUserPlaylist(self, client, config, message):
-		songs = message.content.split(' ')
+		songs = message.content.split()
 
 		for song in songs:
 			if 'www.youtube.com/watch' in song:
