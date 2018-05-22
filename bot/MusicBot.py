@@ -74,10 +74,10 @@ class MusicBot:
 	# Disconnect from the current voice channel
 	async def disconnect(self):
 		if self.__voice is not None and self.__voice.is_connected():
-			self.__player.pause()
+			self.__player.stop()
 			await self.__voice.disconnect()
 			self.__voice = None
-
+			
 
 	async def displayQueue(self, client, message):
 		await client.send_message(message.channel, 
@@ -212,7 +212,27 @@ class MusicBot:
 
 
 			#FIGURE THIS OUT LATER, for some reason the url command doesnt actually return a url so idk wat to do yet
-			'''# Search for a video instead
+			'''
+			# Need to figure out how to get the video title from this:
+			import youtube_dl
+
+			ydl_opts = {
+				'quiet': True,
+				'skip_download': True,
+				'forcetitle': True,
+			}
+
+			with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+				info = ydl.extract_info("ytsearch:hello")
+
+			THIS WILL OUTPUT THE TITLE I WANT TO THE CONSOLE, BUT IDK HOW TO GET THE TITLE AS A VARIABLE YET
+
+
+
+
+
+
+			# Search for a video instead
 												else:
 													temp = await self.__voice.create_ytdl_player("ytsearch:{}" .format(song))
 													print(temp.url)
@@ -260,6 +280,9 @@ class MusicBot:
 
 		# Place AcaBot in the appropriate channel in terms of the summoner
 		if not voiceChannels:
+			# Announces AcaBot's arrival
+			await client.send_message(message.channel, 'AcaBot has joined the voice channel "{}", get ready for some music!' .format(summoned_channel))
+
 			await self.setVoice(client, summoned_channel)
 
 			# Make sure the bot doesnt kill itself
@@ -269,18 +292,15 @@ class MusicBot:
 			# Start the music
 			await self.MusicPlayer(client, config)
 
-			# Announces AcaBot's arrival
-			await client.send_message(message.channel, 'AcaBot has joined the voice channel "{}", get ready for some music!' .format(summoned_channel))
-
 		else:
+			# Announces AcaBot's arrival
+			await client.send_message(message.channel, 'AcaBot has moved to the voice channel "{}", get ready for some music!' .format(summoned_channel))
+
 			await self.__voice.move_to(summoned_channel)
 
 			# Make sure the bot doesnt kill itself
 			if self.__player is not None:
 				self.__player.stop()
-
-			# Announces AcaBot's arrival
-			await client.send_message(message.channel, 'AcaBot has moved to the voice channel "{}", get ready for some music!' .format(summoned_channel))
 
 		return True
 
@@ -331,13 +351,13 @@ class MusicBot:
 		if (minArgs < len(splitMessage) < maxArgs) and splitMessage[1].isdigit():
 			newVolume = int(splitMessage[1])
 
+			await client.send_message(message.channel, 'The volume is now set to {} percent' .format(newVolume))
+
 			if newVolume > 100:
 				newVolume = 100
 
 			self.__volume = newVolume / 100
 			self.__player.volume = self.__volume
-
-			await client.send_message(message.channel, 'The volume is now set to {} percent' .format(newVolume))
 
 		else:
 			await client.send_message(message.channel, 'The current volume is {}' .format(await self.getVolume() * 100))
