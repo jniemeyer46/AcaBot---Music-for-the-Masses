@@ -21,7 +21,7 @@ async def cleanChat(client, config, message, shutdownFlag):
 		# Just a funny message
 		await client.send_message(message.channel, 'I was always taught to leave a place better than I found it, {} total deleted messages.' .format(counter+1))
 	else:
-		await client.send_message(message.channel, 'You have delete {} messages...  Well make that {} messages' .format(counter, counter+1))
+		await client.send_message(message.channel, 'You have deleted {} messages...  Well make that {} messages' .format(counter, counter+1))
 		
 	await asyncio.sleep(3)
 

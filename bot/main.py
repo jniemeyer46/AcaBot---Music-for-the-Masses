@@ -122,7 +122,7 @@ async def on_message(message):
 					'TRUSTED USER COMMANDS \n'
 					'	{0}delete - Deletes the last 100 commands for AcaBot and AcaBot message, can use multiple times to delete them all. \n'
 					'	{0}deletenp - Deletes the song that is currently playing from the autoplaylist. \n'
-					'	{0}disconnect - stops the music streaming and disconnects AcaBot from voice'
+					'	{0}disconnect - stops the music streaming and disconnects AcaBot from voice. \n'
 					'	{0}playlist <name of a .txt file> - This changed the autoplaylist to a user defined list (if no .txt file is specified the autoplaylist will be NONE). \n'
 					'	{0}shuffle - Determines whether the queue should be shuffles (Toggled). \n'
 					'	{0}store - Determines whether songs that users play should be added to the current autoplaylist (Toggled). \n'

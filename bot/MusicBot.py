@@ -53,7 +53,7 @@ class MusicBot:
 		url = self.__player.url
 		songTitle = self.__player.title
 
-		await client.send_message(message.channel, 'You have delete the song {0} with the url {1}... Please queue it again if you want it back in the playlist.' .format(songTitle, url))
+		await client.send_message(message.channel, 'You have deleted the song {0} with the url {1}... Please queue it again if you want it back in the playlist.' .format(songTitle, url))
 		config.Autoplaylist.remove(url)
 
 		if '.txt' not in self.__playlistName:
@@ -336,11 +336,3 @@ class MusicBot:
 	# Get Playlist
 	# Set Playlist
 	# Quiet
-	
-'''
-# Sets the player
-	self.__player = await self.__voice.create_ytdl_player("ytsearch:hello")
-	self.__player.volume = self.__volume
-
-	self.__player.start()
-			'''
