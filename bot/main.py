@@ -22,11 +22,9 @@ client = discord.Client()
 config = Config(config_file)
 
 
-
 # CHECK IF THIS IS EVEN NEEDED JOHN
 if not discord.opus.is_loaded():
 	discord.opus.load_opus('opus.dll')
-
 
 
 ''' BOT STARTS HERE '''
