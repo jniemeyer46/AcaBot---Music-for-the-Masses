@@ -77,7 +77,7 @@ class MusicBot:
 			self.__player.stop()
 			await self.__voice.disconnect()
 			self.__voice = None
-			
+					
 
 	async def displayQueue(self, client, message):
 		await client.send_message(message.channel, 
