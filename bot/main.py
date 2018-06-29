@@ -147,18 +147,13 @@ async def on_message(message):
 		elif msg[0] == 'q' or msg == 'queue':
 			await AcaBot.displayQueue(client, message)	
 
-		# If the owner uses this command it will mute the bot for the entire channel
-		# If anyone else uses this command it will only mute the bot for them alone
-		elif msg[0] == 'quiet':
-			pass
-
 		# Skips the current song
 		elif msg[0] == 's' or msg == 'skip':
 			await AcaBot.skipSong()
 
 		# User enters a youtube link to be played ADD STORE HERE
 		elif msg[0] == 'p' or msg[0] == 'play':
-			await AcaBot.queueToUserPlaylist(client, config, message)
+			await AcaBot.play(client, config, message)
 			
 		# User enters a new playlist file for the bot to pull from
 		elif msg[0].startswith('roll'):
