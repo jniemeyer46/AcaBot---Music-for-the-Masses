@@ -29,9 +29,6 @@ class MusicBot:
 	async def getVolume(self):
 		return self.__volume
 
-	async def getPlaylistName(self):
-		return self.__playlistName
-
 	# Set the player variable
 	async def setPlayer(self, song):
 		self.__player = await self.__voice.create_ytdl_player(song)
@@ -39,7 +36,6 @@ class MusicBot:
 
 	async def setPlayerVolume(self):
 		self.__player.volume = self.__volume
-
 
 	# Set a new volume level
 	async def setVolume(self, config, newVolume):
@@ -316,7 +312,7 @@ class MusicBot:
 		# No new Autoplaylist name
 		if len(splitMessage) < 2:
 			await client.send_message(message.channel, 
-				'The currently playlist is {}.' .format(self.getPlaylistName()))
+				'The current playlist is ({}).' .format(self.__playlistName))
 
 		elif splitMessage[1] is 'none':
 			await client.send_message(message.channel, 'You have turned off AcaBot\'s autoplay functionality.')
@@ -332,7 +328,7 @@ class MusicBot:
 			else:
 				self.__playlistName = splitMessage[1]
 
-			await client.send_message(message.channel, 'You have changed AcaBot\'s playlist to {}' .format(self.__playlistName))
+			await client.send_message(message.channel, 'You have changed AcaBot\'s playlist to {}.' .format(self.__playlistName))
 
 			if os.path.exists('playlists/' + self.__playlistName):
 				with open('playlists/' + self.__playlistName) as f:
