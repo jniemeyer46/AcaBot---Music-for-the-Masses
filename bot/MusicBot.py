@@ -202,32 +202,37 @@ class MusicBot:
 			songs = message.content.split()
 			songs.pop(0)
 
-			if 'www.youtube.com/watch' in songs[0]:
+			print(songs)
+
+			if not songs:
+				await client.send_message(message.channel,
+					'Sorry, you did not give me another to search for, URL or otherwise.')
+			elif 'www.youtube.com/watch' in songs[0]:
 				for song in songs:
-					if 'www.youtube.com/watch' in song:
-						# Holds information about the queued song
-						holder = await self.__voice.create_ytdl_player(song, ytdl_options={'quiet': True, 'skip_download': True,})
+					# Holds information about the queued song
+					holder = await self.__voice.create_ytdl_player(song, ytdl_options={'quiet': True, 'skip_download': True,})
 
-						# Put the song name into the showQueue
-						self.showQueue.append(holder.title)
+					# Put the song name into the showQueue
+					self.showQueue.append(holder.title)
 
-						# Put the url into the playQueue
-						self.playQueue.append(holder.url)
+					# Put the url into the playQueue
+					self.playQueue.append(holder.url)
 
-						# Add the song to the Autoplaylist
-						if holder.url not in config.Autoplaylist and self.__playlistName is not None:
-							# Make sure there is a '.txt' extension on the playlist name
-							if '.txt' not in self.__playlistName:
-								self.__playlistName = self.__playlistName + '.txt'
+					# Add the song to the Autoplaylist
+					if holder.url not in config.Autoplaylist and self.__playlistName is not None:
+						# Make sure there is a '.txt' extension on the playlist name
+						if '.txt' not in self.__playlistName:
+							self.__playlistName = self.__playlistName + '.txt'
 
-							# open the Autoplaylist file and put the new url in
-							with open('playlists/{}' .format(self.__playlistName), 'a') as f:
-								f.write('{} \n' .format(song))
-							f.close()
+						# open the Autoplaylist file and put the new url in
+						with open('playlists/{}' .format(self.__playlistName), 'a') as f:
+							f.write('{} \n' .format(song))
+						f.close()
 
-							# Also add it to the current Autoplaylist being used
-							config.Autoplaylist.append(holder.url)
-			else:
+						# Also add it to the current Autoplaylist being used
+						config.Autoplaylist.append(holder.url)
+
+			elif songs:
 				# Holds information about the queued song
 				holder = await self.__voice.create_ytdl_player("ytsearch:{}" .format(message.content), ytdl_options={'quiet': True, 'skip_download': True,}) 
 
@@ -235,7 +240,7 @@ class MusicBot:
 				self.showQueue.append(holder.title)
 
 				# Put the full search into the playQueue
-				self.playQueue.append(holder.url)
+				self.playQueue.append(holder.url)				
 
 
 	# Shutdown the bot
@@ -310,6 +315,10 @@ class MusicBot:
 
 		# No new Autoplaylist name
 		if len(splitMessage) < 2:
+			await client.send_message(message.channel, 
+				'The currently playlist is {}.' .format(self.getPlaylistName()))
+
+		elif splitMessage[1] is 'none':
 			await client.send_message(message.channel, 'You have turned off AcaBot\'s autoplay functionality.')
 
 			if self.__playlistName is not None:
