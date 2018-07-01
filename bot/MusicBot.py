@@ -236,7 +236,10 @@ class MusicBot:
 				self.showQueue.append(holder.title)
 
 				# Put the full search into the playQueue
-				self.playQueue.append(holder.url)				
+				self.playQueue.append(holder.url)		
+
+				await client.send_message(message.channel, 
+					'The video {} will be played shortly!' .format(holder.title))		
 
 
 	# Shutdown the bot
