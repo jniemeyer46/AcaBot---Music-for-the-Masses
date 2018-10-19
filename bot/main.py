@@ -132,10 +132,10 @@ async def on_message(message):
 					'COMMANDS FOR EVERYONE \n'
 					'	{0}help - Outputs commands for AcaBot. \n'
 					'	{0}np - Outputs information on the song that is currently playing. \n'
-					'	{0}queue (or \\q) - Outputs the list of songs that users have asked to be played (in order). \n'
+					'	{0}queue (or {0}q) - Outputs the list of songs that users have asked to be played (in order). \n'
 					'	~{0}quiet - Mutes AcaBot for a single user (if owner uses the command it mutes the bot for the entire server). \n'
-					'	{0}skip (or !s) - Skips the currently playing song. \n'
-					'	~{0}play <YOUTUBE URL> (or !p) - This will queue a song to be played (will be sentence recognition later). \n'
+					'	{0}skip (or {0}s) - Skips the currently playing song. \n'
+					'	{0}play <YOUTUBE URL> (or {0}p) - This will queue a song to be played (will be sentence recognition later). \n'
 					'	~{0}roll <<number of dice>d<type of dice>> - Will roll a specified dice for the user (example: !roll 5d20 (rolls 5 dice that are 20 sided)). \n' .format(config.Command_Prefix)
 				)
 
@@ -144,11 +144,11 @@ async def on_message(message):
 			await AcaBot.nowPlaying(client, message)
 
 		# Outputs the list of songs that have been queued by people in the discord channel
-		elif msg[0] == 'q' or msg == 'queue':
+		elif msg[0] == 'q' or msg[0] == 'queue':
 			await AcaBot.displayQueue(client, message)	
 
 		# Skips the current song
-		elif msg[0] == 's' or msg == 'skip':
+		elif msg[0] == 's' or msg[0] == 'skip':
 			await AcaBot.skipSong()
 
 		# User enters a youtube link to be played ADD STORE HERE
