@@ -3,12 +3,11 @@ import configparser
 class Config:
 	# Holds the commands that do not take any parameters
 	OwnerCommands = ['shutdown']
-	TrustedCommands = ['delete', 'deletenp', 'playlist', 'shuffle','store', 'summon', 'v','volume']
-	GeneralCommands = ['help', 'np', 'pause', 'p', 'play', 'q', 'queue', 'quiet', 'roll', 's', 'skip']
+	TrustedCommands = ['delete', 'deletenp', 'disconnect', 'playlist', 'shuffle', 'store', 'summon', 'v','volume']
+	GeneralCommands = ['help', 'np', 'p', 'play', 'q', 'queue', 'roll', 's', 'skip']
 
 	# Playlists
 	Autoplaylist = []
-	Userplaylist = []
 
 	# Used to make sure the bot doesnt repeat songs too often
 	CoolDownQueue = []

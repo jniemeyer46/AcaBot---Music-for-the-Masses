@@ -15,7 +15,9 @@ class MusicBot:
 
 	# Queues
 	coolDownPlaylist = []
-	userPlaylist = []
+	playQueue = []
+	showQueue = []
+	
 
 	def __init__(self, client, volume, playlistName):
 		self.__volume = volume
@@ -27,7 +29,6 @@ class MusicBot:
 	async def getVolume(self):
 		return self.__volume
 
-
 	# Set the player variable
 	async def setPlayer(self, song):
 		self.__player = await self.__voice.create_ytdl_player(song)
@@ -35,7 +36,6 @@ class MusicBot:
 
 	async def setPlayerVolume(self):
 		self.__player.volume = self.__volume
-
 
 	# Set a new volume level
 	async def setVolume(self, config, newVolume):
@@ -53,35 +53,37 @@ class MusicBot:
 		url = self.__player.url
 		songTitle = self.__player.title
 
-		await client.send_message(message.channel, 'You have deleted the song {0} with the url {1}... Please queue it again if you want it back in the playlist.' .format(songTitle, url))
-		config.Autoplaylist.remove(url)
+		# Make sure it is possible for the song to be on the autoplaylist
+		if 'www.youtube.com/watch' in url:
+			await client.send_message(message.channel, 'You have delete the song {0} with the url {1}... Please queue it again if you want it back in the playlist.' .format(songTitle, url))
+			config.Autoplaylist.remove(url)
 
-		if '.txt' not in self.__playlistName:
-			self.__playlistName = self.__playlistName + '.txt'
+			if '.txt' not in self.__playlistName:
+				self.__playlistName = self.__playlistName + '.txt'
 
-		# rewrite the Autoplaylist excluding the removed song
-		f = open('playlists/' + self.__playlistName, 'w')
+			# rewrite the Autoplaylist excluding the removed song
+			f = open('playlists/' + self.__playlistName, 'w')
 
-		for song in config.Autoplaylist:
-			f.write(song + '\n')
+			for song in config.Autoplaylist:
+				f.write(song + '\n')
 
-		f.close()
+			f.close()
 
-		# Now skip the song
-		await self.skipSong()
+			# Now skip the song
+			await self.skipSong()
 
 
 	# Disconnect from the current voice channel
 	async def disconnect(self):
 		if self.__voice is not None and self.__voice.is_connected():
-			self.__player.pause()
+			self.__player.stop()
 			await self.__voice.disconnect()
 			self.__voice = None
-
+					
 
 	async def displayQueue(self, client, message):
 		await client.send_message(message.channel, 
-			self.userPlaylist
+			self.showQueue
 			)
 
 
@@ -112,20 +114,24 @@ class MusicBot:
 		# Continue the music
 		while self.__voice is not None:
 			# Waiting
-			if ((config.Autoplaylist is None or not config.Autoplaylist and not self.userPlaylist) or self.__player.is_playing()):
+			if ((config.Autoplaylist is None or not config.Autoplaylist and not self.playQueue) or self.__player.is_playing()):
 				await asyncio.sleep(2)
 
 			# Time for a new song
 			elif self.__player.is_done():
+				# Find out if the last played song was queued by a user
+				if self.__player.url in self.playQueue:
+					self.showQueue.remove(self.__player.title)
+					self.playQueue.remove(self.__player.url)
 				self.__player.stop()
 
 				# If a user queued a song
-				if self.userPlaylist:
+				if self.playQueue:
 					# Song that will be played
 					if config.Shuffle:
-						song = random.choice(self.userPlaylist)
+						song = random.choice(self.playQueue)
 					else:
-						song = self.userPlaylist[0]
+						song = self.playQueue[0]
 
 					# Create the stream for music
 					await self.setPlayer(song)
@@ -142,13 +148,11 @@ class MusicBot:
 						# Add to the cool down queue so no repeats happen
 						self.coolDownPlaylist.append(song)
 
-					# Remove the song from the user playlist
-					self.userPlaylist.remove(song)
-
 					await asyncio.sleep(3)
 
 					# Begins playing music through voice chat
 					self.__player.start()
+
 
 				# When the userPlaylist is empty
 				elif config.Autoplaylist:
@@ -189,25 +193,53 @@ class MusicBot:
 			'The URL for the current song is {1}' .format(self.__player.title, self.__player.url))
 
 
-	async def queueToUserPlaylist(self, client, config, message):
-		songs = message.content.split()
+	async def play(self, client, config, message):
+		if self.__voice is not None:
+			songs = message.content.split()
+			songs.pop(0)
 
-		for song in songs:
-			if 'www.youtube.com/watch' in song:
-				self.userPlaylist.append(song)
+			print(songs)
 
-				if song not in config.Autoplaylist and self.__playlistName is not None:
-					# Make sure there is a '.txt' extension on the playlist name
-					if '.txt' not in self.__playlistName:
-						self.__playlistName = self.__playlistName + '.txt'
+			if not songs:
+				await client.send_message(message.channel,
+					'Sorry, you did not give me another to search for, URL or otherwise.')
+			elif 'www.youtube.com/watch' in songs[0]:
+				for song in songs:
+					# Holds information about the queued song
+					holder = await self.__voice.create_ytdl_player(song, ytdl_options={'quiet': True, 'skip_download': True,})
 
-					# open the Autoplaylist file and put the new url in
-					with open('playlists/{}' .format(self.__playlistName), 'a') as f:
-						f.write('{} \n' .format(song))
-					f.close()
+					# Put the song name into the showQueue
+					self.showQueue.append(holder.title)
 
-					# Also add it to the current Autoplaylist being used
-					config.Autoplaylist.append(song)
+					# Put the url into the playQueue
+					self.playQueue.append(holder.url)
+
+					# Add the song to the Autoplaylist
+					if holder.url not in config.Autoplaylist and self.__playlistName is not None:
+						# Make sure there is a '.txt' extension on the playlist name
+						if '.txt' not in self.__playlistName:
+							self.__playlistName = self.__playlistName + '.txt'
+
+						# open the Autoplaylist file and put the new url in
+						with open('playlists/{}' .format(self.__playlistName), 'a') as f:
+							f.write('{} \n' .format(song))
+						f.close()
+
+						# Also add it to the current Autoplaylist being used
+						config.Autoplaylist.append(holder.url)
+
+			elif songs:
+				# Holds information about the queued song
+				holder = await self.__voice.create_ytdl_player("ytsearch:{}" .format(message.content), ytdl_options={'quiet': True, 'skip_download': True,}) 
+
+				# Put the search into the showQueue
+				self.showQueue.append(holder.title)
+
+				# Put the full search into the playQueue
+				self.playQueue.append(holder.url)		
+
+				await client.send_message(message.channel, 
+					'The video {} will be played shortly!' .format(holder.title))		
 
 
 	# Shutdown the bot
@@ -249,6 +281,9 @@ class MusicBot:
 
 		# Place AcaBot in the appropriate channel in terms of the summoner
 		if not voiceChannels:
+			# Announces AcaBot's arrival
+			await client.send_message(message.channel, 'AcaBot has joined the voice channel "{}", get ready for some music!' .format(summoned_channel))
+
 			await self.setVoice(client, summoned_channel)
 
 			# Make sure the bot doesnt kill itself
@@ -258,18 +293,15 @@ class MusicBot:
 			# Start the music
 			await self.MusicPlayer(client, config)
 
-			# Announces AcaBot's arrival
-			await client.send_message(message.channel, 'AcaBot has joined the voice channel "{}", get ready for some music!' .format(summoned_channel))
-
 		else:
+			# Announces AcaBot's arrival
+			await client.send_message(message.channel, 'AcaBot has moved to the voice channel "{}", get ready for some music!' .format(summoned_channel))
+
 			await self.__voice.move_to(summoned_channel)
 
 			# Make sure the bot doesnt kill itself
 			if self.__player is not None:
 				self.__player.stop()
-
-			# Announces AcaBot's arrival
-			await client.send_message(message.channel, 'AcaBot has moved to the voice channel "{}", get ready for some music!' .format(summoned_channel))
 
 		return True
 
@@ -282,6 +314,10 @@ class MusicBot:
 
 		# No new Autoplaylist name
 		if len(splitMessage) < 2:
+			await client.send_message(message.channel, 
+				'The current playlist is ({}).' .format(self.__playlistName))
+
+		elif splitMessage[1] is 'none':
 			await client.send_message(message.channel, 'You have turned off AcaBot\'s autoplay functionality.')
 
 			if self.__playlistName is not None:
@@ -295,7 +331,7 @@ class MusicBot:
 			else:
 				self.__playlistName = splitMessage[1]
 
-			await client.send_message(message.channel, 'You have changed AcaBot\'s playlist to {}' .format(self.__playlistName))
+			await client.send_message(message.channel, 'You have changed AcaBot\'s playlist to {}.' .format(self.__playlistName))
 
 			if os.path.exists('playlists/' + self.__playlistName):
 				with open('playlists/' + self.__playlistName) as f:
@@ -320,19 +356,14 @@ class MusicBot:
 		if (minArgs < len(splitMessage) < maxArgs) and splitMessage[1].isdigit():
 			newVolume = int(splitMessage[1])
 
+			await client.send_message(message.channel, 'The volume is now set to {} percent' .format(newVolume))
+
 			if newVolume > 100:
 				newVolume = 100
 
 			self.__volume = newVolume / 100
 			self.__player.volume = self.__volume
 
-			await client.send_message(message.channel, 'The volume is now set to {} percent' .format(newVolume))
-
 		else:
 			await client.send_message(message.channel, 'The current volume is {}' .format(await self.getVolume() * 100))
 
-
-	# Play
-	# Get Playlist
-	# Set Playlist
-	# Quiet
