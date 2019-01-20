@@ -31,7 +31,8 @@ class MusicBot:
 
 	# Set the player variable
 	async def setPlayer(self, song):
-		self.__player = await self.__voice.create_ytdl_player(song)
+		beforeArgs = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5" 
+		self.__player = await self.__voice.create_ytdl_player(song, before_options=beforeArgs)
 
 
 	async def setPlayerVolume(self):
