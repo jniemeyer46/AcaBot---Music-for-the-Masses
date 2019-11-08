@@ -7,8 +7,7 @@ import itertools
 # Bot Files
 import functions
 from MusicBot import MusicBot
-#from config import Config, DefaultConfigs
-from personal_config import Config, DefaultConfigs
+from config import Config, DefaultConfigs
 
 # Stores the file that has the user input settings
 config_file = DefaultConfigs.Settings

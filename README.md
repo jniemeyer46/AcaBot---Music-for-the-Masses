@@ -1,4 +1,7 @@
 # AcaBot - Music for the Masses
+
+https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token
+
 This is just a personal project for my Discord Server, if you have a problem running the bot please make sure you are using the correct version of python when trying to start it.
 
 Python version 3.5.1
