@@ -3,7 +3,6 @@ import random
 import discord
 import asyncio
 import itertools
-from discord.ext import commands
 
 # Bot Files
 import functions

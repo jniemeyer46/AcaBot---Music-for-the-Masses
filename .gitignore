@@ -101,8 +101,4 @@ ENV/
 .mypy_cache/
 
 # Personal Ignores
-PersonalSettings.ini
-personal_config.py
-Trusted_Permissions.txt
-saving.txt
-AcaPging.txt
+configs/
