@@ -101,6 +101,7 @@ ENV/
 .mypy_cache/
 
 # Personal Ignores
+.vscode/
 configs/
 playlists/
 !playlists/defaultPlaylist.txt
