@@ -102,3 +102,5 @@ ENV/
 
 # Personal Ignores
 configs/
+playlists/
+!playlists/defaultPlaylist.txt
