@@ -1,6 +1,6 @@
 from configparser import ConfigParser
 
-class Config:
+class Configs:
     def __init__(self, configFile='../configs/settings.ini'):
         config = ConfigParser()
         config.read(configFile, encoding='utf-8')
@@ -23,9 +23,10 @@ class Config:
 
         # Playlists
         autoplaylist = []
-
         # Used to make sure the bot doesnt repeat songs too often
         coolDownQueue = []
+        # Pause
+        self.pause = False
 
         # .get commands
         self.botToken = config.get('Credentials', 'botToken', fallback=None)
@@ -36,7 +37,7 @@ class Config:
         self.commandPrefix = config.get('MusicBot', 'commandPrefix', fallback='\\')
         self.volume = config.getfloat('MusicBot', 'volume', fallback=0.95)
         self.cooldownQueueSizePercent = config.getfloat('MusicBot', 'cooldownQueueSizePercent', fallback=0.95)
-        self.autoplayListName = config.get('MusicBot', 'autoplaylist', fallback='defaultPlaylist.txt')
+        self.autoplaylistName = config.get('MusicBot', 'autoplaylist', fallback='defaultPlaylist.txt')
         self.saveQueuedSongs = config.getboolean('MusicBot', 'saveQueuedSongs', fallback=False)
 
         self.errorChecks()
@@ -59,18 +60,15 @@ class Config:
             )
 
     def createAutoplaylist(self):
-        if self.autoplayListName is not None and self.autoplayListName != 'None':
+        if self.autoplaylistName is not None and self.autoplaylistName != 'None':
             try:
-                if '.txt' not in self.autoplayListName:
-                    self.autoplayListName = self.autoplayListName + '.txt'
+                if '.txt' not in self.autoplaylistName:
+                    self.autoplaylistName = self.autoplaylistName + '.txt'
 
-                with open('../playlists/' + self.autoplayListName) as f:
+                with open('../playlists/' + self.autoplaylistName) as f:
                     self.autoplaylist = f.read().split()
-
-                print(self.autoplayListName)
-                print(self.autoplaylist)
             except NameError:
                 print("There seems to be a problem with the Autoplaylist you have set in the Settings.ini file")
 
 if __name__ == '__main__':
-    testConfig = Config()
+    testConfig = Configs()
