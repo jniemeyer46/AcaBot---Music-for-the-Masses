@@ -1,1 +1,1 @@
-python3 bot/main.py
+python bot/main.py

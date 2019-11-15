@@ -1,7 +1,7 @@
 from configparser import ConfigParser
 
 class Configs:
-    def __init__(self, configFile='../configs/settings.ini'):
+    def __init__(self, configFile='configs/settings.ini'):
         config = ConfigParser()
         config.read(configFile, encoding='utf-8')
         confSections = {
@@ -17,16 +17,18 @@ class Configs:
             )
 
         # Holds the commands that do not take any parameters
-        OwnerCommands = ['pause', 'restart', 'shutdown']
-        TrustedCommands = ['clean', 'deletenp', 'disconnect', 'playlist', 'shuffle', 'store', 'summon', 'v', 'volume']
-        GeneralCommands = ['help', 'np', 'p', 'play', 'q', 'queue', 'roll', 's', 'skip']
+        self.OwnerCommands = ['restart', 'shutdown']
+        self.TrustedCommands = ['deletenp', 'disconnect', 'pause', 'playlist', 'store', 'summon', 'volume']
+        self.GeneralCommands = ['clean', 'help', 'np', 'play', 'q', 'skip']
 
         # Playlists
-        autoplaylist = []
+        self.autoplaylist = []
         # Used to make sure the bot doesnt repeat songs too often
-        coolDownQueue = []
-        # Pause
-        self.pause = False
+        self.coolDownQueue = []
+        # Pause, restart, shutdown
+        self.pauseFlag = False
+        self.restartFlag = False
+        self.shutdownFlag = False
 
         # .get commands
         self.botToken = config.get('Credentials', 'botToken', fallback=None)
@@ -65,7 +67,7 @@ class Configs:
                 if '.txt' not in self.autoplaylistName:
                     self.autoplaylistName = self.autoplaylistName + '.txt'
 
-                with open('../playlists/' + self.autoplaylistName) as f:
+                with open('playlists/' + self.autoplaylistName) as f:
                     self.autoplaylist = f.read().split()
             except NameError:
                 print("There seems to be a problem with the Autoplaylist you have set in the Settings.ini file")
