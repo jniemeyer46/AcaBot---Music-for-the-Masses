@@ -11,7 +11,7 @@ class MusicBot:
     def __init__(self, client=None, configs=None):
         self._autoplaylistName = configs.autoplaylistName
         self._volume = configs.volume
-        self._pause = configs.pause
+        self._pause = configs.pauseFlag
         self._client = client
         self._configs = configs
 
@@ -28,7 +28,7 @@ class MusicBot:
     # Owner Commands
     async def restart():
         pass
-    
+
     async def shutdown():
         pass
 
@@ -41,7 +41,7 @@ class MusicBot:
 
     async def pause():
         pass
-    
+
     async def playlist():
         pass
 

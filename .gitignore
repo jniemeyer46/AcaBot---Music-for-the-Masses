@@ -102,6 +102,6 @@ ENV/
 
 # Personal Ignores
 .vscode/
-configs/
+configs/devSettings.ini
 playlists/
 !playlists/defaultPlaylist.txt

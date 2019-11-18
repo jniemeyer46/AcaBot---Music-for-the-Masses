@@ -1,7 +1,7 @@
 from configparser import ConfigParser
 
 class Configs:
-    def __init__(self, configFile='configs/settings.ini'):
+    def __init__(self, configFile='configs/devSettings.ini'):
         config = ConfigParser()
         config.read(configFile, encoding='utf-8')
         confSections = {
@@ -17,7 +17,7 @@ class Configs:
             )
 
         # Holds the commands that do not take any parameters
-        self.OwnerCommands = ['restart', 'shutdown']
+        self.OwnerCommands = ['shutdown']
         self.TrustedCommands = ['deletenp', 'disconnect', 'pause', 'playlist', 'store', 'summon', 'volume']
         self.GeneralCommands = ['clean', 'help', 'np', 'play', 'q', 'skip']
 
@@ -27,7 +27,6 @@ class Configs:
         self.coolDownQueue = []
         # Pause, restart, shutdown
         self.pauseFlag = False
-        self.restartFlag = False
         self.shutdownFlag = False
 
         # .get commands

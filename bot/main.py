@@ -5,6 +5,7 @@ import itertools
 import threading
 import random
 import time
+import youtube_dl
 
 # Local File Imports
 from _musicbot import MusicBot
@@ -30,9 +31,6 @@ async def on_message(message):
 
         '''----- Owner Commands -----'''
         if msg[0] in configs.OwnerCommands and str(message.author.id) == configs.ownerID:
-            # Restart the bot and clear the chat from all bot requests and responses
-            if msg[0] == 'restart':
-                await acaBot.restart()
             # shutdown the bot and clear the chat from all bot requests and responses
             if msg[0] == 'shutdown':
                 pass
@@ -46,12 +44,12 @@ async def on_message(message):
             # Clean the discord chat of all previous bot requests and responses
             if msg[0] == 'clean':
                 await acaBot.cleanChat(message)
+            elif msg[0] == 'test':
+                pass
 
 
 if __name__ == '__main__':
     ''' BOT STARTS HERE '''
+    acaBot = MusicBot(discordClient, configs)
 
-    while configs.restartFlag is True:
-        acaBot = MusicBot(discordClient, configs)
-
-        discordClient.run(configs.botToken)
+    discordClient.run(configs.botToken)
