@@ -19,7 +19,7 @@ class Configs:
         # Holds the commands that do not take any parameters
         self.OwnerCommands = ['shutdown']
         self.TrustedCommands = ['deletenp', 'disconnect', 'pause', 'playlist', 'store', 'summon', 'volume']
-        self.GeneralCommands = ['clean', 'help', 'np', 'play', 'q', 'skip']
+        self.GeneralCommands = ['clean', 'help', 'np', 'play', 'q', 'skip', 'test']
 
         # Playlists
         self.autoplaylist = []
